@@ -7,17 +7,17 @@ Created on Thu Dec  6 12:02:37 2018
 """
 
 import numpy as np
+from numpy import genfromtxt
+from scipy.interpolate import interp1d
 
-folder="lookupdata/"
+folder="slurpy/lookupdata/"
 
 def premgravity(radius):
-    from numpy import genfromtxt
     # Read PREM data from CSV files
     prem_radius= genfromtxt(folder+'radPREM.csv', delimiter=',')
     prem_gravity=genfromtxt(folder+'gravPREM.csv', delimiter=',')
     
     # Interpolate PREM data
-    from scipy.interpolate import interp1d
     f=interp1d(prem_radius[14:37],prem_gravity[14:37],kind='cubic',fill_value="extrapolate")
     # start from index 14 to avoid repeating ICB radius at index 13
     
@@ -27,13 +27,11 @@ def premgravity(radius):
     return gravity
 
 def premdensity(radius):
-    from numpy import genfromtxt
     # Read PREM data from CSV files
     prem_radius= genfromtxt(folder+'radPREM.csv', delimiter=',')
     prem_density=genfromtxt(folder+'denPREM.csv', delimiter=',')
     
     # Interpolate PREM data
-    from scipy.interpolate import interp1d
     f=interp1d(prem_radius[14:37],prem_density[14:37],kind='cubic',fill_value="extrapolate")
     # start from index 14 to avoid repeating ICB radius at index 13
     
@@ -43,13 +41,11 @@ def premdensity(radius):
     return density
     
 def vpspeed(radius):
-    from numpy import genfromtxt
     # Read PREM data from CSV files
     prem_radius= genfromtxt(folder+'radPREM.csv', delimiter=',')
     prem_vp=genfromtxt(folder+'vpPREM.csv', delimiter=',')
     
     # Interpolate PREM data
-    from scipy.interpolate import interp1d
     f=interp1d(prem_radius[14:37],prem_vp[14:37],kind='cubic',fill_value="extrapolate")
     # start from index 14 to avoid repeating ICB radius at index 13
     
@@ -59,7 +55,7 @@ def vpspeed(radius):
     return pwave_speed
     
 def prempressure(radius): # pressure given radius
-    from numpy import genfromtxt
+
     # Read PREM data from CSV files
     prem_radius= genfromtxt(folder+'radPREM.csv', delimiter=',')
     prem_pressure=genfromtxt(folder+'presPREM.csv', delimiter=',')
@@ -99,7 +95,6 @@ def liquidus(input_radius): # Obtain liquidus temperature given radius
     a[2]=-0.0664736
     a[3]=7.94628e-5
 
-    from lookup import prempressure
     pressure=prempressure(input_radius)*1e-9 # (GPa)
     
     # Pure iron minus depression from oxygen

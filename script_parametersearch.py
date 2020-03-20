@@ -14,13 +14,6 @@ Created on Wed Jun 19 13:20:26 2019
 # This script allows the user to solve the nondimensional spherical steady
 # state slurry equations.
 #
-# Parameters
-# ----------
-# 
-#
-# Returns
-# -------
-#
 
 # %% IMPORT STATEMENTS
 
@@ -44,7 +37,7 @@ layer_thicknesses=np.array([150e3]) # (m)
 #layer_thicknesses=np.array([150e3,200e3,250e3,300e3,350e3,400e3]) #(m)
 thermal_conductivities=np.array([100.0]) # (W m^-1 K^-1)
 icb_heatfluxes=np.array([2.5]) # (TW)
-csb_heatfluxes=np.array([5]) # (TW)
+csb_heatfluxes=np.array([5.5]) # (TW)
 
 h=0.05 # stepsize of heat flux through parameter space
 # csb_heatfluxes=np.arange(0.05,15.05,h) # (TW) 

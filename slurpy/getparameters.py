@@ -21,8 +21,8 @@ from scipy import integrate, interpolate
 
 from slurpy.coreproperties import icb_radius,density_liquidO, \
 density_solidFe,heat_capacity,latent_heat,aO,aFe,aSSi,deltaV_solidFe_liquidFe, \
-gigayear, alphaT, alphaXi, bulk_modulus, cmb_radius
-from slurpy.lookup import liquidus, premgravity, premdensity
+gigayear, alphaT, alphaXi, bulk_modulus, cmb_radius, gruneisen
+from slurpy.lookup import liquidus, premgravity, premdensity, vpspeed
 
 # CSB radius
 def getcsbradius(layer_thickness):
@@ -85,13 +85,11 @@ def getcorecoolingrate(core_cooling_rate):
 
 # Snow speed given IC age
 def getsnowspeed(ic_age):
-    from coreproperties import icb_radius, gigayear
     snow_speed=icb_radius/(3*ic_age*gigayear)
     return snow_speed
 
 # IC age given snow speed
 def geticage(snow_speed):
-    from coreproperties import icb_radius, gigayear
     ic_age=icb_radius/(3*snow_speed*gigayear)
     return ic_age
 
@@ -169,13 +167,9 @@ def slurrydensity(radius,temp,xi,solidflux,layer_thickness,mol_conc_oxygen_bulk,
 # %%    
 def adiabat(oc_radius,csb_temp,n):
     # Construct adiabat across outer core given CSB temperature
-    from coreproperties import gruneisen
-#    oc_radius=np.linspace(float(csb_radius),cmb_radius,n)
     # Gravity
-    from lookup import premgravity
     oc_gravity=premgravity(oc_radius)
     # Seismic parameter
-    from lookup import vpspeed
     seismic_parameter=vpspeed(oc_radius)**2
     # Pre-allocate 
     temp_adiabat=np.zeros(n)
@@ -184,7 +178,6 @@ def adiabat(oc_radius,csb_temp,n):
     # Boundary condition
     temp_adiabat[0] = csb_temp
     # Integrate
-    from scipy import integrate
     for i in range(1,n):
         temp_adiabat[i]=csb_temp*np.exp(-integrate.simps(integrand[0:i+1], \
                     oc_radius[0:i+1]))  
