@@ -57,7 +57,7 @@ def plot_profile(inputDir):
     # Liquidus        
     radius_liquidus=np.linspace(icb_radius,csb_radius)
     temp_liquidus=liquidus(radius_liquidus)
-    ax1.plot(radius_liquidus*1e-3,temp_liquidus,'k--', label = 'Liquidus (Davies et al. 2015')
+    ax1.plot(radius_liquidus*1e-3,temp_liquidus,'k--', label = 'Liquidus (Davies et al. 2015)')
     ax1.legend()
     
     # Constant CSB oxygen

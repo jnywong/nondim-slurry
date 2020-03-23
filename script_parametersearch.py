@@ -98,11 +98,13 @@ for w,x,y,z in [(w,x,y,z) for w in layer_thicknesses for x in icb_heatfluxes for
     elif sensitivityOn ==1:
         filename_temp = 'sensitivity/temp_{:.0f}'.format(csb_temp).replace('.','_')
         filename_oxy = 'sensitivity/xi_{:.1f}'.format(mol_conc_oxygen_bulk).replace('.','_')
-        if not os.path.exists(filename):
-            os.makedirs(filename)
-    (outputDir,radius,temp,xi,solidFlux,density)= solveslurry(w,x,y,z, \
+        if not os.path.exists(filename_temp):
+            os.makedirs(filename_temp)
+        if not os.path.exists(filename_oxy):
+            os.makedirs(filename_oxy)            
+    (outputDir,radius,temp,xi,solidFlux,density,csb_temp)= solveslurry(w,x,y,z, \
                        mol_conc_oxygen_bulk,csb_temp,sedimentation_constant)
-   if sensitivityOn ==1:
+    if sensitivityOn ==1:
         with open(filename_temp,'wb') as f:
             pickle.dump([radius,temp,xi,solidFlux,density], f)
         with open(filename_oxy,'wb') as f:
