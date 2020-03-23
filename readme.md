@@ -7,6 +7,7 @@ Solve the 1D, steady, spherical slurry system outlined in Wong et al.
 
 ### Prerequisites
 - [Git](https://git-scm.com)
+- [Python](https://www.python.org/) - Version 3.7.0
 
 ### Installing
 
