@@ -10,7 +10,7 @@ Solve the 1D, steady, spherical slurry system outlined in Wong et al.
 
 ### Installing
 
-Download the latest version [here](https://github.com/jnywong/nondim-slurry).
+Download the latest version of the repository [here](https://github.com/jnywong/nondim-slurry).
 
 ### A simple example
 
@@ -38,7 +38,7 @@ Download the latest version [here](https://github.com/jnywong/nondim-slurry).
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [license.md](license.md) file for details
 
 ## Acknowledgments
 
