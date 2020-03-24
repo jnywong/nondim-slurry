@@ -50,7 +50,7 @@ from slurpy.coreproperties import icb_radius, deltaV_solidFe_liquidFe, \
     density_solidFe, heat_capacity, latent_heat
 
 def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivity, \
-            mol_conc_oxygen_bulk, csb_temp, sedimentation_constant,
+            csb_temp, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
             self_diffusion=0.98e-8, mol_conc_SSi=8, \
             initial_F=5, initial_icAge=0.5, n=100, h=0.05):
 
@@ -141,7 +141,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     # %% MESH
     r=np.linspace(icb_radius/csb_radius,1,n) # layer height (m)
     y=np.zeros((4,r.size)) # pre-allocate array
-    # %% BOUNDARY VALUE PROBLEM                                         
+    # %% BOUNDARY VALUE PROBLEM
     def fun_sph(r,y,p): # use ICB or snow speed?
         # Eigenvalues
         F=p[0]
@@ -165,10 +165,10 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                         eq1, # eq (16)
                         eq2, # eq (17)
                         eq3 ]) # eq (18)
-                                         
+
     # Define boundary conditions for solve_bvp
-    csb_temp=gp.getcsbtemp(layer_thickness)
-  
+    # csb_temp=gp.getcsbtemp(layer_thickness)
+
     def bc_sph(ya,yb,p):
         speed = p[1]
 
@@ -181,23 +181,23 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                 yb[3]+Pe/Le # CSB heat flux
                 ])
 
-    # Define initial conditions for solve_bvp    
+    # Define initial conditions for solve_bvp
     def ic_sph(y):
         y[0,:]=csb_temp*heat_capacity/(St*latent_heat)*Rrho, # temperature
         y[1,:]=1, # oxygen
         y[2,:]=-initial_speed, # solid flux
         y[3,:]=-Pe/Le # temp gradient
         return y
-    
+
     # Define initial conditions using previous solution
     def ic_old(y):
         y[0,:]=np.reshape(temp0,(1,n)) # temperature
         y[1,:]=np.reshape(xi0,(1,n)) # oxygen
         y[2,:]=np.reshape(solid_flux0,(1,n)) # solid flux
         y[3,:]=np.reshape(temp_grad0,(1,n))
-        
+
         return y
-    
+
     # Non-dimensionalise initial guess
     if initOn!=0:
         temp0=temp0/(csb_heatflux_old*1e12/(4*density0*heat_capacity* \
@@ -206,8 +206,8 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         solid_flux0=solid_flux0/(freezing_speed*density_solidFe)
         temp_grad0=temp_grad0/(csb_heatflux_old*1e12/(4*density0*heat_capacity* \
                     freezing_speed*np.pi*csb_radius**3))
-    
-    # Run solver       
+
+    # Run solver
     tolerance=1e-3
     nmax = 20000
     if initOn!=0:
@@ -216,13 +216,13 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         print('No initialisation')
         sol=solve_bvp(fun_sph,bc_sph,r,ic_sph(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
     # default tolerance is tol=1e-3
-    # default max nodes is 1000 
-    
+    # default max nodes is 1000
+
     # If initialisation goes wrong then go for original
     if initOn!=0 and sol.status!=0: # or sol.p[0]<0 or np.log(sol.p[0])>2):
         print('Status = {} - Try again without initialisation'.format(sol.status))
         sol=solve_bvp(fun_sph,bc_sph,r,ic_sph(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes = nmax)
-        
+
     if sol.status==2:
         state=2 # singular Jacobian encountered
         print("Singular Jacobian encountered")
@@ -232,18 +232,18 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     else:
         state=0 # converged
         print("Converged")
-        
+
     # %% OUTPUT
     F_out=sol.p[0]
     print("Barodiffusion parameter is %.2f" % F_out) # F parameter
     icb_speed_out=sol.p[1]*freezing_speed
     snow_speed_out = icb_speed_out - freezing_speed
-    
+
     ic_age_out=gp.geticage(icb_speed_out)
 #    print("Snow speed is %.2e m/s" % snow_speed_out) # snow speed
     print("ICB speed is %.2e m/s" % icb_speed_out) # icb speed
     print("IC age is %.2f billion years" % ic_age_out) # ic age
-    
+
     z_out = sol.x*csb_radius
     temp_out = sol.y[0,:]*csb_heatflux*1e12/(4*density0*heat_capacity* \
                     freezing_speed*np.pi*csb_radius**2)
@@ -255,7 +255,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     xi_grad_out= sol.yp[1,:]*mass_conc_O/csb_radius
     j_grad_out=sol.yp[2,:]*freezing_speed*density_solidFe/csb_radius
 
-    
+
     # %% POST-PROCESS
     # Slurry density
     density_slurry,phi_out,temp_fluc,xi_fluc,phi_fluc,density_fluc=gp.slurrydensity(z_out,temp_out,xi_out,j_out, \
@@ -263,7 +263,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                                          mol_conc_SSi,sedimentation_constant)
     density_jump=density_slurry[0]-density_slurry[-1]
     print("Density jump is {:.2f} kg/m^-3".format(density_jump))
-    
+
     # Heat balance
     (Q_cmb, Qs, Qs_slurry, Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out,
             cmb_temp, temp_ad) = gp.heatflux(z_out,temp_out,xi_out,j_out,phi_out, \
@@ -271,7 +271,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                              snow_speed_out,freezing_speed,icb_heatflux*1e12,
                              layer_thickness,thermal_conductivity,csb_heatflux*1e12,n)
 
-    # %% SAVE 
+    # %% SAVE
     sp.saveprofiles(outputDir,z_out,temp_out,xi_out,j_out,phi_out,density_slurry, \
                  temp_grad_out,xi_grad_out,j_grad_out,temp_fluc,xi_fluc, \
                  phi_fluc,density_fluc)
@@ -282,5 +282,5 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                      Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out, \
                      cmb_temp,acore,state)
     print('Run ' + outputDir[0:-1] + ' is saved')
-    
-    return (outputDir, z_out, temp_out, xi_out, j_out, density_slurry, csb_temp)
+
+    return (outputDir, z_out, temp_out, xi_out, j_out, density_slurry)

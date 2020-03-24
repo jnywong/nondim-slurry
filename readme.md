@@ -27,6 +27,20 @@ Download the latest version of the repository [here](https://github.com/jnywong/
 
 ![alt text](docs/simple_output.png "Simple output")
 
+### Example: Sensitivity study
+
+1. Open `script_sensitivity.py`
+
+2. Enter some input parameters. For example, try:
+
+![hello!](docs/sensitivity.png "Example: Sensitivity study")
+
+3. Run `script_sensitivity.py`
+
+4. Admire the output:
+
+![hello!](docs/sensitivity_example.png "Example: Sensitivity output")
+
 ## Built With
 
 * [Python](https://www.python.org/) - Version 3.7.0

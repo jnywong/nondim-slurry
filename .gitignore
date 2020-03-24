@@ -1,5 +1,7 @@
 *.DS_Store
 results/
+figures/
+sensitivity/
 archive/
 slurpy/__pycache__/*
 

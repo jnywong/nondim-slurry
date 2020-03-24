@@ -73,6 +73,16 @@ def geticbheatflux(freezing_speed):
     icb_heatflux = freezing_speed*(4*np.pi*icb_radius**2*density_solidFe*latent_heat)*1e-12
     return icb_heatflux
 
+# CSB heat flux
+def getcsbheatflux(St,freezing_speed,density0,csb_radius):
+    csb_heatflux = St*density0*freezing_speed*latent_heat*4*np.pi*csb_radius**2*1e-12
+    return csb_heatflux
+
+# Thermal conductivity
+def getthermalconductivity(Le,density0,self_diffusion=0.98e-8):
+    thermal_conductivity=Le*density0*heat_capacity*self_diffusion
+    return thermal_conductivity
+
 # Initial guess for snow speed
 def getinitialsnowspeed(ic_age):
     initial_snow_speed = icb_radius/(3*ic_age*gigayear) # assume volumetric growth rather than linear growth
@@ -108,7 +118,7 @@ def getKphi(sedimentation_constant, radius, mol_conc_oxygen_bulk, mol_conc_SSi=8
     Kphi=sedimentation_constant*gravity*density*deltaV_solid_liquid
     return Kphi
 
-#%%
+#%% Dimensionless parameters
 # Lip
 def getLip(csb_radius):
     gravity=premgravity(csb_radius)
@@ -137,7 +147,20 @@ def getPeclet(freezing_speed,csb_radius,self_diffusion):
     Pe=freezing_speed*csb_radius/(self_diffusion)
     return Pe
 
-# %%    
+#%% Dimensional parameters
+def getdimensional(layer_thickness,Pe,St,Le, \
+                   mol_conc_oxygen_bulk=8., mol_conc_SSi=8., \
+                       self_diffusion=0.98e-8):
+    csb_radius = getcsbradius(layer_thickness)
+    density0=premdensity(csb_radius)
+    mass_conc_O,acore=getcsbmassoxygen(mol_conc_oxygen_bulk, mol_conc_SSi)
+    freezing_speed = getfreezingspeedfromPe(Pe,csb_radius,self_diffusion)
+    icb_heatflux=geticbheatflux(freezing_speed)
+    csb_heatflux=getcsbheatflux(St,freezing_speed,density0,csb_radius)
+    thermal_conductivity=getthermalconductivity(Le, density0)
+    return (icb_heatflux,csb_heatflux,thermal_conductivity)
+    
+# %% Postprocessing
 def slurrydensity(radius,temp,xi,solidflux,layer_thickness,mol_conc_oxygen_bulk, \
                   sedimentation_constant,mol_conc_SSi=8):
     # Density profile across slurry layer    
