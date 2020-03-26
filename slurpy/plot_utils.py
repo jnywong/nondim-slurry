@@ -7,12 +7,13 @@ Created on Fri Mar 20 15:22:51 2020
 """
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
 import pickle
 import os
 
 from slurpy.data_utils import readdata
-from slurpy.getparameters import getcsbmassoxygen
+from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
 from slurpy.coreproperties import icb_radius, aO
 from slurpy.lookup import premdensity, liquidus
 
@@ -165,3 +166,55 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
         fig1.savefig(saveDir+"temp_oxy.pdf",format='pdf', dpi=200, bbox_inches='tight')
         fig1.savefig(saveDir+"temp_oxy.png",format='png', dpi=200, bbox_inches='tight')
         print('Figure saved as {}'.format(saveDir+"temp_oxy.pdf"))
+        
+# %%
+def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
+    nSed = sed_con.size
+    colors=plt.cm.copper_r(np.linspace(0.4,1,nSed))
+    
+    w, h = plt.figaspect(figAspect)
+    fig, (ax1,ax2) = plt.subplots(2,1,sharex=True,figsize=(w,2*h))
+    
+    # Format legend into scientific notation
+    f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
+    g = lambda x,pos : "{}".format(f.set_useMathText('%1.10e' % x))
+    fmt = mticker.FuncFormatter(g)
+    
+    # flucMax=np.zeros((nSed))
+    # flucMin=np.zeros((nSed))
+    
+    for i in range(nSed):
+        filename = 'sensitivity/sed_{:.0f}'.format(np.log10(sed_con[i])).replace('.','_')
+        with open(filename, 'rb') as f:
+            (radius,temp,xi,solidFlux,density)=pickle.load(f)
+        ax1.plot(radius*1e-3,density,label=r"$k_\phi={}$".format(fmt(sed_con[i])),
+              color=colors[i])
+        # ax1.plot(radius*1e-3,density,label=r"$k_\phi=${}".format(r'$10^{sed_con[i]}$'),
+        #      color=colors[i])        
+        Kphi = getKphi(sed_con[i],radius,mol_conc_oxygen_bulk)
+        phi = getphi(Kphi,solidFlux)
+        ax2.plot(radius*1e-3,phi,color=colors[i])
+                 
+        
+    density_prem=premdensity(radius)
+    ax1.plot(radius*1e-3,density_prem,'k--', label='PREM')
+    ax1.set(ylabel="Density ($\mathrm{kg m^{-3}}$)") #,yscale="log")
+    ax2.set(xlabel="Radius (km)",ylabel="Solid fraction",yscale='log')
+    ax2.axhline(0.6,color='k',linestyle='--') # rheological transition
+    fig.legend(loc='center right', bbox_to_anchor=(1.4, 0.5),fontsize = 11.5)
+    ax1.set_xlim([radius[0]*1e-3,radius[-1]*1e-3])
+    ax2.set_ylim([1e-4,1])
+    
+    ax1.set_title('(a)',x=0.95,y=1,fontsize=14)
+    ax2.set_title('(b)',x=0.95,y=1,fontsize=14)
+    
+    if saveOn==1:
+        saveDir='figures/sensitivity/'
+        if not os.path.exists(saveDir):
+            os.makedirs(saveDir)
+        fig.savefig(saveDir+"sedimentation.pdf",format='pdf', dpi=200, bbox_inches='tight')
+        fig.savefig(saveDir+"sedimentation.png",format='png', dpi=200, bbox_inches='tight')
+        print('Figure saved as {}'.format(saveDir+"sedimentation.pdf"))
+    plt.show()
+
+    

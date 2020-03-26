@@ -109,7 +109,6 @@ def getfreezingspeedfromPe(Pe,csb_radius,self_diffusion):
     return freezing_speed
 
 #%%
-
 # Kphi - prefactor in solid flux eq (2.9.1g)
 def getKphi(sedimentation_constant, radius, mol_conc_oxygen_bulk, mol_conc_SSi=8):
     gravity=premgravity(radius)
@@ -117,6 +116,22 @@ def getKphi(sedimentation_constant, radius, mol_conc_oxygen_bulk, mol_conc_SSi=8
     deltaV_solid_liquid = getchangevolmeltingFe(density[-1])
     Kphi=sedimentation_constant*gravity*density*deltaV_solid_liquid
     return Kphi
+
+def getphi(Kphi,solidflux):
+    phi = (-solidflux/Kphi)**(3/5)
+    return phi
+
+#%% Scalings
+# Temp
+def get_tempScale(csb_heatflux,csb_radius,density0,freezing_speed):
+    scale_temp = csb_heatflux*1e12/(4*np.pi*csb_radius**2*density0* \
+                                    heat_capacity*freezing_speed)
+    return scale_temp
+
+# Solid flux
+def get_jScale(freezing_speed):
+    scale_j = freezing_speed*density_solidFe
+    return scale_j
 
 #%% Dimensionless parameters
 # Lip
@@ -159,33 +174,29 @@ def getdimensional(layer_thickness,Pe,St,Le, \
     csb_heatflux=getcsbheatflux(St,freezing_speed,density0,csb_radius)
     thermal_conductivity=getthermalconductivity(Le, density0)
     return (icb_heatflux,csb_heatflux,thermal_conductivity)
-    
+
 # %% Postprocessing
-def slurrydensity(radius,temp,xi,solidflux,layer_thickness,mol_conc_oxygen_bulk, \
+def slurrydensity(radius,temp,xi,solidflux,mol_conc_oxygen_bulk, \
                   sedimentation_constant,mol_conc_SSi=8):
     # Density profile across slurry layer    
-    csb_radius=getcsbradius(layer_thickness)
+    csb_radius=radius[-1]
     csb_density=premdensity(csb_radius)
-    
     # Solid fraction
     Kphi=getKphi(sedimentation_constant,radius,mol_conc_oxygen_bulk)
     phi=(-solidflux/Kphi)**(3/5)
-    
     # Density fluctuations
     deltaV_solid_liquid=getchangevolmeltingFe(csb_density)
-    temp_fluc=-csb_density*alphaT*(temp-temp[-1])
-    xi_fluc=-csb_density*alphaXi*(xi-xi[-1])
-    phi_fluc=csb_density*(csb_density*deltaV_solid_liquid+alphaXi*xi)*(phi-phi[-1])
-    density_fluc= temp_fluc+xi_fluc+phi_fluc
-    
+    temp_denFluc=-csb_density*alphaT*(temp-temp[-1])
+    xi_denFluc=-csb_density*alphaXi*(xi-xi[-1])
+    phi_denFluc=csb_density*(csb_density*deltaV_solid_liquid+alphaXi*xi)*(phi-phi[-1])
+    density_fluc= temp_denFluc+xi_denFluc+phi_denFluc
     # Hydrostatic density
     slurry_gravity=premgravity(radius)
     density_hydrostatic=1/(slurry_gravity*(radius-csb_radius)/bulk_modulus+ \
                            1/csb_density) 
-    
     # Total density
     density_slurry=density_hydrostatic+density_fluc
-    return (density_slurry, phi, temp_fluc, xi_fluc, phi_fluc,density_fluc)
+    return (density_slurry, phi, temp_denFluc, xi_denFluc, phi_denFluc,density_fluc)
 
 # %%    
 def adiabat(oc_radius,csb_temp,n):
@@ -221,19 +232,18 @@ def get_cooling(icb_speed,csb_temp, radius_oc, csb_radius, cmb_radius):
     cmb_temp1 = temp_ad1[-1]
     print('CMB temp after 1Ga is {:.0f}K'.format(cmb_temp1))
     cooling_rate = (cmb_temp1 - cmb_temp0)/delta_t
+    cooling_rate_Ga = cooling_rate*gigayear
+    print('Cooling rate is {:.2f}K/Ga'.format(cooling_rate_Ga))
     return  cooling_rate, cmb_temp0, temp_ad0
 
 #%% Heat flux across core-mantle boundary
-def heatflux(z,temp,xi,solidflux,phi,temp_grad,xi_grad,density_slurry, \
-             snow_speed,freezing_speed,icb_heatflux,layer_thickness,thermal_conductivity, \
+def heatflux(radius,temp,xi,solidflux,phi,temp_grad,xi_grad,density_slurry, \
+             icb_speed,icb_heatflux,layer_thickness,thermal_conductivity, \
              csb_heatflux,n):
 
-    radius=z
     csb_radius = radius[-1]      
-    icb_speed = snow_speed+freezing_speed
 
     # GRAVITATIONAL POWER
-    
     # Gravitational potential
     radius_psi = np.linspace(icb_radius,cmb_radius)
     gravity_psi = premgravity(radius_psi)
@@ -276,14 +286,11 @@ def heatflux(z,temp,xi,solidflux,phi,temp_grad,xi_grad,density_slurry, \
     Ql=4*np.pi*icb_radius**2*density_solidFe*icb_speed*latent_heat
     print('Total Ql is {:.2f}TW'.format(Ql*1e-12))  
     
-    # SECULAR COOLING
-    
+    # SECULAR COOLING    
     # Cooling rate
     csb_temp = temp[-1]                    
     cooling_rate,cmb_temp,temp_ad = get_cooling(icb_speed,csb_temp,radius_oc,
                                                     csb_radius, cmb_radius)
-    cooling_rate_Ga = cooling_rate*gigayear
-    print('Cooling rate is {:.2f}K/Ga'.format(cooling_rate_Ga))
     
     # Outer core
     Qs_oc = - heat_capacity*cooling_rate/cmb_temp \

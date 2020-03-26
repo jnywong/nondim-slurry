@@ -60,7 +60,7 @@ import os
 from slurpy.slurry import solveslurry
 from slurpy.lookup import liquidus
 from slurpy.getparameters import getcsbradius
-from slurpy.plot_utils import plot_sensitivity
+from slurpy.plot_utils import plot_sensitivity, plot_sedimentation
 
 # %% MODEL INPUTS
 # Save plot?
@@ -75,7 +75,7 @@ csb_heatflux=5.5 # (TW)
 # Sensitivity study
 csb_temp = np.arange(4500.,6100.,100) # (K)
 csb_oxy = np.arange(2,12.5,0.5) # (mol.%)
-sed_con= np.array([1e-4,1e-2,1e1]) # (kg s/m^3) pre-factor in sedimentation coefficient, b(phi)
+sed_con= np.array([1e-5,1e-4,1e-3,1e-2,1e-1]) # (kg s/m^3) pre-factor in sedimentation coefficient, b(phi)
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
 # Append default values
@@ -146,3 +146,5 @@ for z in [z for z in sed_con]:
     print('{} saved'.format(filename))        
 
     k=k+1 
+    
+plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75)    
