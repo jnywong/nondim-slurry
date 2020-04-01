@@ -14,8 +14,8 @@ import os
 
 from slurpy.data_utils import readdata
 from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
-from slurpy.coreproperties import icb_radius, aO
-from slurpy.lookup import premdensity, liquidus
+from slurpy.coreproperties import icb_radius, earth_radius, aO
+from slurpy.lookup import premdensity, liquidus, vpspeed
 
 # %% 
 def plot_profile(inputDir):
@@ -25,7 +25,7 @@ def plot_profile(inputDir):
         # print(inputDir)
         inputs,outputs,profiles = readdata(inputDir)
     except:
-        print('No solution')
+        print('Folder does not exist')
     
     # print('State = {}'.format(outputs.state.iloc[0]))
     
@@ -114,12 +114,11 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
     
     # PREM
     density_prem=premdensity(radius)
-    ax1.plot(radius*1e-3,density_prem, 'k', linestyle = '--', label = r'PREM')
+    ax1.plot(radius*1e-3,density_prem, 'k', linestyle = '--')
     
     ax1.legend(fontsize=11.5)
     ax1.set_xlim([radius[0]*1e-3,radius[-1]*1e-3])
     ax1.set(xlabel="Radius (km)",ylabel="Density ($\mathrm{kg m^{-3}}$)")
-    #ax1.set_xticks(np.arange(1225,1380,25))
     
     den_low = (den_jump[0]-den_jump0)/den_jump0*100
     den_high = (den_jump[-1]-den_jump0)/den_jump0*100
@@ -148,16 +147,18 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
     
     # PREM
     density_prem=premdensity(radius)
-    ax2.plot(radius*1e-3,density_prem, 'k', linestyle = '--')
+    ax2.plot(radius*1e-3,density_prem, 'k', linestyle = '--', label = r'PREM')
     
     ax2.legend(fontsize=11.5)
     ax2.set_xlim([radius[0]*1e-3,radius[-1]*1e-3])
-    # ax2.set_ylim([12080,max_den])
     ax2.set(xlabel="Radius (km)")
     
     den_low = (den_jump[0]-den_jump0)/den_jump0*100
     den_high = (den_jump[-1]-den_jump0)/den_jump0*100
     print('Oxygen: Density jump ranges from {:.2f}% to {:.2f}% of reference'.format(den_low, den_high))
+    
+    ax1.set_title('(a)',x=0.95,y=1,fontsize=14)
+    ax2.set_title('(b)',x=0.95,y=1,fontsize=14)    
     
     if saveOn==1:
         saveDir='figures/sensitivity/'
@@ -175,27 +176,20 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
     w, h = plt.figaspect(figAspect)
     fig, (ax1,ax2) = plt.subplots(2,1,sharex=True,figsize=(w,2*h))
     
-    # Format legend into scientific notation
-    f = mticker.ScalarFormatter(useOffset=False, useMathText=True)
-    g = lambda x,pos : "{}".format(f.set_useMathText('%1.10e' % x))
-    fmt = mticker.FuncFormatter(g)
-    
-    # flucMax=np.zeros((nSed))
-    # flucMin=np.zeros((nSed))
+    # Format function for scientific notation in legend
+    my_fun = mticker.ScalarFormatter(useOffset=False, useMathText=True)
     
     for i in range(nSed):
         filename = 'sensitivity/sed_{:.0f}'.format(np.log10(sed_con[i])).replace('.','_')
         with open(filename, 'rb') as f:
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
-        ax1.plot(radius*1e-3,density,label=r"$k_\phi={}$".format(fmt(sed_con[i])),
-              color=colors[i])
-        # ax1.plot(radius*1e-3,density,label=r"$k_\phi=${}".format(r'$10^{sed_con[i]}$'),
-        #      color=colors[i])        
+        ax1.plot(radius*1e-3,density,label=r"$k_\phi={}$".format(my_fun.format_data(sed_con[i])),
+              color=colors[i]) 
         Kphi = getKphi(sed_con[i],radius,mol_conc_oxygen_bulk)
         phi = getphi(Kphi,solidFlux)
         ax2.plot(radius*1e-3,phi,color=colors[i])
                  
-        
+    # PREM       
     density_prem=premdensity(radius)
     ax1.plot(radius*1e-3,density_prem,'k--', label='PREM')
     ax1.set(ylabel="Density ($\mathrm{kg m^{-3}}$)") #,yscale="log")
@@ -217,4 +211,50 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
         print('Figure saved as {}'.format(saveDir+"sedimentation.pdf"))
     plt.show()
 
+# %%
+def plot_seismic(inputDir,saveOn,figAspect=0.75):
+    w, h = plt.figaspect(figAspect)
+    fig, ax1 = plt.subplots(1,1,figsize=(w,h))
     
+    # Load data
+    try:
+        inputs,outputs,profiles = readdata(inputDir)
+    except:
+        print('{} does not exist'.format(inputDir))
+        return
+    
+    # Calculate bulk modulus from PREM
+    bulk_modulus = vpspeed(profiles.r)**2*premdensity(profiles.r)
+    
+    # Calculate vp using slurry density and PREM bulk modulus
+    vp_slurry = np.sqrt(bulk_modulus/profiles.density)
+    
+    # Calculate FVW P wave speed (Ohtaki et al. 2015)
+    x = profiles.r/earth_radius
+    vp_fvw = -3.3*x - -3.3*x[0] +10.33
+    
+    
+    # Check density
+    # ax1.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
+    # ax1.plot(profiles.r*1e-3,profiles.density)
+    
+    # Plot P wave speed
+    ax1.plot(profiles.r*1e-3,vp_slurry*1e-3,label='slurry') #(km/s)
+    ax1.plot(profiles.r*1e-3,vp_fvw,label='Ohtaki et al. (2015)')
+    ax1.plot(profiles.r*1e-3,vpspeed(profiles.r)*1e-3,'k--',label='PREM')
+    ax1.vlines(profiles.r[0]*1e-3,vpspeed(profiles.r[0])*1e-3,10.4, 'k', linestyle='--')
+    
+    ax1.legend(fontsize=11.5)
+    ax1.set(xlabel="Radius (km)")
+    ax1.set(ylabel="P wave speed (km/s)")
+    ax1.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
+    ax1.set_ylim([10.2,10.4])
+    
+    if saveOn==1:
+        saveDir='figures/seismic/'
+        if not os.path.exists(saveDir):
+            os.makedirs(saveDir)
+        fig.savefig(saveDir+"seismic.pdf",format='pdf', dpi=200, bbox_inches='tight')
+        fig.savefig(saveDir+"seismic.png",format='png', dpi=200, bbox_inches='tight')
+        print('Figure saved as {}'.format(saveDir+"seismic.pdf"))
+    plt.show()

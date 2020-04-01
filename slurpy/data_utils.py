@@ -8,6 +8,9 @@ Created on Fri Mar 20 15:10:46 2020
 import numpy as np
 import pandas as pd
 
+import slurpy.getparameters as gp
+from slurpy.coreproperties import density_solidFe, deltaV_solidFe_liquidFe
+
 # Profiles
 def saveprofiles(outputDir,z,temp,xi,j,phi,density,temp_grad,xi_grad,j_grad, \
                  temp_fluc,xi_fluc,phi_fluc,density_fluc):
@@ -84,3 +87,24 @@ def readdata(inputDir):
     data_profiles=pd.read_csv(inputDir+"profiles.csv",index_col=False)
     
     return data_inputs,data_outputs,data_profiles    
+
+def get_outputDir(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity,
+                  mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8,mol_conc_SSi=8):
+    csb_radius=gp.getcsbradius(layer_thickness)
+    mass_conc_O,acore=gp.getcsbmassoxygen(mol_conc_oxygen_bulk)
+    freezing_speed=gp.getfreezingspeed(icb_heatflux)
+    Lip,csb_gravity,density0=gp.getLip(csb_radius)
+    Lix=gp.getLix(mass_conc_O)
+    St=gp.getStefan(icb_heatflux,csb_heatflux,csb_radius)
+    Le=gp.getLewis(thermal_conductivity,self_diffusion,density0)
+    Pe=gp.getPeclet(freezing_speed,csb_radius,self_diffusion)
+    
+    str1=str(np.round(Le,2)).replace('.','_')
+    str2=str(np.round(Lip,2)).replace('.','_')
+    str3=str(np.round(Lix,2)).replace('.','_')
+    str4=str(np.round(Pe,2)).replace('.','_')
+    str5=str(np.round(St,2)).replace('.','_')
+
+    outputDir="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
+    
+    return outputDir
