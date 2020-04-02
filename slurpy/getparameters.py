@@ -22,7 +22,7 @@ from scipy import integrate, interpolate
 from slurpy.coreproperties import icb_radius,density_liquidO, \
 density_solidFe,heat_capacity,latent_heat,aO,aFe,aSSi,deltaV_solidFe_liquidFe, \
 gigayear, alphaT, alphaXi, bulk_modulus, cmb_radius, gruneisen
-from slurpy.lookup import liquidus, premgravity, premdensity, vpspeed
+from slurpy.lookup import liquidus, premgravity, premdensity, premvp
 
 # CSB radius
 def getcsbradius(layer_thickness):
@@ -204,7 +204,7 @@ def adiabat(oc_radius,csb_temp,n):
     # Gravity
     oc_gravity=premgravity(oc_radius)
     # Seismic parameter
-    seismic_parameter=vpspeed(oc_radius)**2
+    seismic_parameter=premvp(oc_radius)**2
     # Pre-allocate 
     temp_adiabat=np.zeros(n)
     # Integrand for the adiabat

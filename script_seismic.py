@@ -6,62 +6,36 @@ Created on Wed Apr 1 14:52:41 2020
 @author: jennywong
 
 ###############################################################################
-# script_vp.py                                                       #
+# script_seismic.py                                                           #
 ###############################################################################
 
-# Perform sensitivity study outlined in Wong et al. (in prep).
+# Compare slurry P wave speed with PREM, ak135 and Ohtaki et al. (2015) as 
+outlined in Wong et al. (in prep).
 
 Parameters
 ----------
-plotOn : int
-    Toggle 0='off' and 1='on' to display the solution output. Recommended off for large parameter searches but useful for probing a small number of solutions
-layer_thicknesses : numpy array
+saveOn : int
+    Toggle 0='off' and 1='on' to save figure output.
+layer_thickness : numpy float
     Specify slurry layer thickness (m).
-thermal_conductivities : numpy array
+thermal_conductivity : numpy float
     Specify thermal conductivity (W/m/K).
-icb_heatfluxes : numpy array
+icb_heatflux : numpy float
     Specify heat flux through the ICB (TW).
-csb_heatfluxes : numpy array
+csb_heatflux : numpy float
     Specify heat flux through the CSB (TW).
-h : float
-    Specify step size through the heat fluxes for parameter searches.
-sensitivityOn : int
-    Toggle manual control of the CSB temperature and/or CSB oxygen concentration for sensitivity studies.
-mol_conc_oxygen_bulk : float
-    If sensitivityOn=1, then manually specify the CSB oxygen concentration. Default value is 8 mol.%.
-csb_temp : float
-    If sensitivityOn=1, then manually specify the CSB temperture (K). Default value depends on the layer thickness, given by function slurpy.lookup.liquidus.
-sedimentation_constant : float
-    If sensitivityOn=1, then manually specify the sedimentation constant used to derive the solid fraction from the solid flux. Default value is 1e-2 kg s/m^3.
 
 Returns
 -------
-outputDir : str
-    Folder name solution outputs are saved in
-radius : numpy array
-    Solution mesh (m)
-temp : numpy array
-    Solution temperature (K)
-xi : numpy array
-    Solution oxygen concentration (mass and not molar concentration)
-solidFlux : numpy array
-    Solution solid flux (kg/m^2/s)
-density : numpy array
-    Solution density (kg/m^3)
+foldername : str
+    Folder name of Lewis number solution is saved in
+filename : str
+    Filename solution is saved in
 
 """
 
 # %% IMPORT STATEMENTS
-
-import numpy as np
-import pickle
-import os
-
-from slurpy.data_utils import get_outputDir, readdata
-
-from slurpy.slurry import solveslurry
-from slurpy.lookup import vpspeed,premdensity
-from slurpy.getparameters import getcsbradius
+from slurpy.data_utils import get_outputDir
 from slurpy.plot_utils import plot_seismic
 
 # %% MODEL INPUTS
@@ -75,13 +49,8 @@ icb_heatflux=3.5 # (TW)
 csb_heatflux=6. # (TW)
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
-
-# Make vp directory
-if not os.path.exists('seismic'):
-    os.makedirs('seismic')
-
 # Load solution
-inputDir = get_outputDir(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivity)
-
-# Plot
-plot_seismic(inputDir,saveOn)
+foldername, filename = get_outputDir(layer_thickness, icb_heatflux, \
+                                     csb_heatflux, thermal_conductivity)
+# Plot and save
+plot_seismic(foldername, filename, saveOn)

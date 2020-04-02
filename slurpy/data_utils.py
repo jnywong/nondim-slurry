@@ -105,6 +105,7 @@ def get_outputDir(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity
     str4=str(np.round(Pe,2)).replace('.','_')
     str5=str(np.round(St,2)).replace('.','_')
 
-    outputDir="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
+    foldername = "Le_{}".format(str1)
+    filename = "Lip_{}_Lix_{}_Pe_{}_St_{}".format(str2,str3,str4,str5)
     
-    return outputDir
+    return foldername,filename

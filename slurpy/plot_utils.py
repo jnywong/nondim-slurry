@@ -15,7 +15,7 @@ import os
 from slurpy.data_utils import readdata
 from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
 from slurpy.coreproperties import icb_radius, earth_radius, aO
-from slurpy.lookup import premdensity, liquidus, vpspeed
+from slurpy.lookup import premdensity, liquidus, premvp, ak135radius, ak135vp
 
 # %% 
 def plot_profile(inputDir):
@@ -212,9 +212,11 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
     plt.show()
 
 # %%
-def plot_seismic(inputDir,saveOn,figAspect=0.75):
+def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
     w, h = plt.figaspect(figAspect)
-    fig, ax1 = plt.subplots(1,1,figsize=(w,h))
+    fig, ax = plt.subplots(1,1,figsize=(w,h))
+    
+    inputDir = "results/{}/{}/".format(foldername,filename)
     
     # Load data
     try:
@@ -224,37 +226,46 @@ def plot_seismic(inputDir,saveOn,figAspect=0.75):
         return
     
     # Calculate bulk modulus from PREM
-    bulk_modulus = vpspeed(profiles.r)**2*premdensity(profiles.r)
+    bulk_modulus = premvp(profiles.r)**2*premdensity(profiles.r)
     
     # Calculate vp using slurry density and PREM bulk modulus
     vp_slurry = np.sqrt(bulk_modulus/profiles.density)
     
-    # Calculate FVW P wave speed (Ohtaki et al. 2015)
+    # Calculate FVW P wave speed (Ohtaki et al. 2015, fig 11a)
     x = profiles.r/earth_radius
-    vp_fvw = -3.3*x - -3.3*x[0] +10.33
+    vp_fvw = 3.3*x[0]-3.3*x +10.33
     
+    # Look up AK135
+    radius_ak135 = ak135radius()
+    vp_ak135 = ak135vp(radius_ak135)
     
     # Check density
     # ax1.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
     # ax1.plot(profiles.r*1e-3,profiles.density)
     
     # Plot P wave speed
-    ax1.plot(profiles.r*1e-3,vp_slurry*1e-3,label='slurry') #(km/s)
-    ax1.plot(profiles.r*1e-3,vp_fvw,label='Ohtaki et al. (2015)')
-    ax1.plot(profiles.r*1e-3,vpspeed(profiles.r)*1e-3,'k--',label='PREM')
-    ax1.vlines(profiles.r[0]*1e-3,vpspeed(profiles.r[0])*1e-3,10.4, 'k', linestyle='--')
+    ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color='darkgrey',lw=2,label='slurry') #(km/s)
+    ax.vlines(profiles.r[0]*1e-3,vp_slurry[0]*1e-3,10.4,color='darkgrey',lw=2)
+    ax.plot(profiles.r*1e-3,vp_fvw,color='blue',lw=2,ls=':',label='Ohtaki et al. (2015)')
+    ax.vlines(profiles.r[0]*1e-3,vp_fvw[0],10.4,color='blue',lw=2,ls=':')
+    ax.plot(profiles.r*1e-3,premvp(profiles.r)*1e-3,'k--',label='PREM')
+    ax.vlines(profiles.r[0]*1e-3,premvp(profiles.r[0])*1e-3,10.4, 'k', linestyle='--')
+    ax.plot(radius_ak135*1e-3,vp_ak135*1e-3,'k',label='ak135')
+    ax.vlines(radius_ak135[0]*1e-3,vp_ak135[0]*1e-3,10.4, 'k')
     
-    ax1.legend(fontsize=11.5)
-    ax1.set(xlabel="Radius (km)")
-    ax1.set(ylabel="P wave speed (km/s)")
-    ax1.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
-    ax1.set_ylim([10.2,10.4])
+    
+    ax.legend(fontsize=11.5)
+    ax.set(xlabel="Radius (km)")
+    ax.set(ylabel="P wave speed (km/s)")
+    ax.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
+    ax.set_ylim([10.18,10.4])
+    plt.yticks(np.arange(10.2,10.4,0.1))
     
     if saveOn==1:
         saveDir='figures/seismic/'
-        if not os.path.exists(saveDir):
-            os.makedirs(saveDir)
-        fig.savefig(saveDir+"seismic.pdf",format='pdf', dpi=200, bbox_inches='tight')
-        fig.savefig(saveDir+"seismic.png",format='png', dpi=200, bbox_inches='tight')
-        print('Figure saved as {}'.format(saveDir+"seismic.pdf"))
+        if not os.path.exists(saveDir+foldername):
+            os.makedirs(saveDir+foldername)
+        fig.savefig(saveDir+foldername+"/"+filename+".pdf",format='pdf', dpi=200, bbox_inches='tight')
+        fig.savefig(saveDir+foldername+"/"+filename+".png",format='png', dpi=200, bbox_inches='tight')
+        print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
     plt.show()

@@ -40,7 +40,7 @@ def premdensity(radius):
     
     return density
     
-def vpspeed(radius):
+def premvp(radius):
     # Read PREM data from CSV files
     prem_radius= genfromtxt(folder+'radPREM.csv', delimiter=',')
     prem_vp=genfromtxt(folder+'vpPREM.csv', delimiter=',')
@@ -48,12 +48,27 @@ def vpspeed(radius):
     # Interpolate PREM data
     f=interp1d(prem_radius[14:37],prem_vp[14:37],kind='cubic',fill_value="extrapolate")
     # start from index 14 to avoid repeating ICB radius at index 13
-    
-    # Determine CSB density from PREM
     pwave_speed=f(radius)
     
     return pwave_speed
+
+def ak135vp(radius):
+    # Read PREM data from CSV files
+    ak135_radius= ak135radius()
+    ak135_vp=genfromtxt(folder+'vpAK135.csv', delimiter=',')
     
+    # Interpolate PREM data
+    f=interp1d(ak135_radius,ak135_vp*1e3,kind='cubic',fill_value="extrapolate")
+    pwave_speed=f(radius)
+    
+    return pwave_speed
+
+def ak135radius():
+    # Read PREM data from CSV files
+    ak135_radius= genfromtxt(folder+'radAK135.csv', delimiter=',')
+    
+    return ak135_radius*1e3
+
 def prempressure(radius): # pressure given radius
 
     # Read PREM data from CSV files
