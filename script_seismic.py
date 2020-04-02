@@ -40,7 +40,7 @@ from slurpy.plot_utils import plot_seismic
 
 # %% MODEL INPUTS
 # Save plot?
-saveOn=1 
+saveOn=1
 
 # Input parameters
 layer_thickness=250e3 # (m)
