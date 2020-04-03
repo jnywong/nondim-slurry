@@ -261,6 +261,13 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                          mol_conc_oxygen_bulk,sedimentation_constant)
     density_jump=density[0]-density[-1]
     print("Density jump is {:.2f} kg/m^-3".format(density_jump))
+    # Stable layer?
+    density_fluc_grad = np.gradient(density_fluc,r_out)
+    unstable = density_fluc_grad[density_fluc_grad>0]
+    if unstable.size!=0:
+        print('Unstable slurry')
+    else:
+        print('Stable slurry')
 
     # Heat balance
     (Q_cmb, Qs, Qs_slurry, Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out,
