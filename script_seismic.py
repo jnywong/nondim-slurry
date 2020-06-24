@@ -45,8 +45,8 @@ saveOn=1
 # Input parameters
 layer_thickness=250e3 # (m)
 thermal_conductivity=100. # (W m^-1 K^-1)
-icb_heatflux=3. # (TW)
-csb_heatflux=6. # (TW)
+icb_heatflux=3.5 # (TW)
+csb_heatflux=6 # (TW)
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
 # Load solution

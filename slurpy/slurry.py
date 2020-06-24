@@ -50,7 +50,7 @@ from slurpy.coreproperties import icb_radius, deltaV_solidFe_liquidFe, \
     density_solidFe, heat_capacity, latent_heat
 
 def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivity, \
-            csb_temp, h, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
+            csb_temp, h=0.05, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
             self_diffusion=0.98e-8, mol_conc_SSi=8, \
             initial_F=5, initial_icAge=0.5, maxSt=6, n=100,
             tolerance=1e-3,nmax=2e4):
