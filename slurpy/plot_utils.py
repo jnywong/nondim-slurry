@@ -172,7 +172,7 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
 # %%
 def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
     nSed = sed_con.size
-    colors=plt.cm.copper_r(np.linspace(0.4,1,nSed))
+    colors=plt.cm.gnuplot_r(np.linspace(0.4,1,nSed))
     
     w, h = plt.figaspect(figAspect)
     fig, (ax1,ax2) = plt.subplots(2,1,sharex=True,figsize=(w,2*h))
