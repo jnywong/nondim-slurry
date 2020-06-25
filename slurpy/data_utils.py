@@ -30,9 +30,10 @@ def saveprofiles(outputDir,z,temp,xi,j,phi,density,temp_grad,xi_grad,j_grad, \
     df=pd.DataFrame(d)
     df.to_csv(outputDir+'profiles.csv',index=False)
 
+# Inputs
 def saveinputs(outputDir,n,layer_thickness,thermal_conductivity,icb_heatflux, \
                     csb_heatflux,mol_conc_oxygen_bulk,mol_conc_SSi, \
-                    self_diffusion,sedimentation_constant):
+                    self_diffusion,sedimentation_constant,Le,Lip,Lix,Pe,St):
     inputs={'n':n,'layerThickness':layer_thickness,
             'thermalConductivity':thermal_conductivity,
             'icb_heatflux':icb_heatflux,
@@ -40,17 +41,24 @@ def saveinputs(outputDir,n,layer_thickness,thermal_conductivity,icb_heatflux, \
             'oxygen_bulk':mol_conc_oxygen_bulk,
             'siliconSulphur_bulk':mol_conc_SSi,
             'selfdiffusionCoefficient':self_diffusion,
-            'sedimentationConstant':sedimentation_constant
+            'sedimentationConstant':sedimentation_constant,
+            'Le':Le,
+            'Lip':Lip,
+            'Lix':Lix,
+            'Pe':Pe,
+            'St':St            
             }
     df=pd.DataFrame(inputs,index=[0]) # scalar data requires passing index=[0]
     df.to_csv(outputDir+'inputs.csv')
 
-def saveoutputs(outputDir,F,snow_speed,icb_speed, Q_cmb, Qs, Qs_slurry, 
-                     Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out, 
-                     cmb_temp,acore,state):
+# Outputs
+def saveoutputs(outputDir,F,snow_speed,icb_speed,density_jump,Q_cmb,Qs,Qs_slurry, 
+                     Qs_oc,Ql,Qg,Qg_oc,Qg_slurry,cooling_rate_out, 
+                     cmb_temp,acore,state,stable):
     outputs={'F':F,
              'snowSpeed':snow_speed,
-             'icbSpeed':icb_speed,             
+             'icbSpeed':icb_speed,     
+             'density_jump':density_jump,
              'Q_cmb':Q_cmb,
              'Qs':Qs,
              'Qs_slurry': Qs_slurry,
@@ -62,7 +70,8 @@ def saveoutputs(outputDir,F,snow_speed,icb_speed, Q_cmb, Qs, Qs_slurry,
              'cooling_rate_out': cooling_rate_out,
              'cmb_temp': cmb_temp,
              'a_core':acore,
-             'state':state}
+             'state':state,
+             'stable':stable}
     df=pd.DataFrame(outputs,index=[0]) # scalar data requires passing index=[0]
     df.to_csv(outputDir+'outputs.csv')
     

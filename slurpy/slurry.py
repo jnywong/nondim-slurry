@@ -44,6 +44,7 @@ import slurpy.getparameters as gp
 # import slurpy.coreproperties as cp
 import slurpy.lookup as lp
 import slurpy.data_utils as sp
+import slurpy.postprocess as pp
 
 from scipy.integrate import solve_bvp
 from slurpy.coreproperties import icb_radius, deltaV_solidFe_liquidFe, \
@@ -53,7 +54,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
             csb_temp, h, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
             self_diffusion=0.98e-8, mol_conc_SSi=8, \
             initial_F=5, initial_icAge=0.5, maxSt=6, n=100,
-            tolerance=1e-3,nmax=2e4):
+            tolerance=1e-3,nmax=1e3,overwrite=0):
 
     # %% Nested functions to define BVP
     def fun(r,y,p):
@@ -124,7 +125,6 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     scale_xi = mass_conc_O
     scale_j = gp.get_jScale(freezing_speed)
     
-    
     # %% OUTPUT DIRECTORY
     str1=str(np.round(Le,2)).replace('.','_')
     str2=str(np.round(Lip,2)).replace('.','_')
@@ -144,8 +144,8 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     elif St> maxSt:
         return (outputDir,0,0,0,0,0)    
     # Skip if directory already exists
-#    else:
-#        return (outputDir,0,0,0,0,0)
+    elif os.path.exists(outputDir) and overwrite==0:
+        return (outputDir,0,0,0,0,0)    
 
     # Load previous solution to initialise
     # Previous Stefan number
@@ -153,7 +153,8 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     state=2
     initOn=0
     # FIX: loop back through all of St before Pe
-    while state == 2:
+    # while state == 2:
+    while state != 0:
         try:
             csb_heatflux_old=csb_heatflux-m*h
             St_old=gp.getStefan(icb_heatflux,csb_heatflux_old,csb_radius)
@@ -167,7 +168,8 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
             # Previous Peclet number
             m=1
             state=2
-            while state == 2:
+            # while state == 2:
+            while state != 0:
                 try:
                     icb_heatflux_old = icb_heatflux-m*h
                     freezing_speed_old=gp.getfreezingspeed(icb_heatflux_old)
@@ -187,6 +189,8 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
 
     # Read csv data
     if initOn!=0:
+        data_inputs=pd.read_csv(inputDir+"inputs.csv",index_col=False)
+        csb_heatflux_old=np.float(data_inputs['csb_heatflux'])
         data_profile=pd.read_csv(inputDir+"profiles.csv",index_col=False)
         temp0=np.array(data_profile['temp'])
         xi0=np.array(data_profile['oxygen'])
@@ -212,7 +216,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     y=np.zeros((4,r.size)) # pre-allocate soln array
 
     # %% BOUNDARY VALUE PROBLEM
-    # Run solver - default solver tolerance is 1e-3, default max nodes is 1000
+    # Run solver - default solver tolerance is 1e-3 and default solver max nodes is 1000
     if initOn!=0:
         print('Initialised with {}'.format(inputDir))        
         sol=solve_bvp(fun,bcs,r,ic_old(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
@@ -220,17 +224,24 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         print('No initialisation')
         sol=solve_bvp(fun,bcs,r,ics(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
 
-    # If initialisation gives no soln then try no initialisation
-    if initOn!=0 and sol.status!=0:
-        print('Status = {} - Try again without initialisation'.format(sol.status))
-        sol=solve_bvp(fun,bcs,r,ics(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes = nmax)
+    # If no solution then increase nmax
+    while initOn!=0 and sol.status!=0:        
+        nmax = 10*nmax
+        print('Status = {} - Increase nmax to {}'.format(sol.status,nmax))
+        sol=solve_bvp(fun,bcs,r,ic_old(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
+        # When nmax is too large, try no initialisation
+        if sol.status!=0 and nmax > 1e6: 
+            initOn=0
+            sol=solve_bvp(fun,bcs,r,ics(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
 
     if sol.status==2:
         state=2 
         print("Singular Jacobian encountered")
+        return (outputDir,0,0,0,0,0)   
     elif sol.status==1:
         state=1 
         print("Maximum number of mesh nodes exceeded")
+        return (outputDir,0,0,0,0,0)   
     else:
         state=0
         print("Converged")
@@ -257,21 +268,22 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     # %% POST-PROCESS
     # Slurry density
     density,phi_out,temp_denFluc,xi_denFluc,phi_denFluc,density_fluc= \
-        gp.slurrydensity(r_out,temp_out,xi_out,j_out, \
+        pp.slurrydensity(r_out,temp_out,xi_out,j_out, \
                          mol_conc_oxygen_bulk,sedimentation_constant)
     density_jump=density[0]-density[-1]
     print("Density jump is {:.2f} kg/m^-3".format(density_jump))
     # Stable layer?
-    density_fluc_grad = np.gradient(density_fluc,r_out)
-    unstable = density_fluc_grad[density_fluc_grad>0]
-    if unstable.size!=0:
-        print('Unstable slurry')
+    stable = pp.stablelayer(density_fluc,r_out)
+    if stable == 1:
+        print('Stable layer')
+    elif stable ==2: 
+        print('Partially stable layer')
     else:
-        print('Stable slurry')
-
+        print('Unstable layer')
+        
     # Heat balance
     (Q_cmb, Qs, Qs_slurry, Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out,
-            cmb_temp, temp_ad) = gp.heatflux(r_out,temp_out,xi_out,j_out,phi_out, \
+            cmb_temp, temp_ad) = pp.heatflux(r_out,temp_out,xi_out,j_out,phi_out, \
                              temp_grad_out,xi_grad_out, density, \
                              icb_speed_out,icb_heatflux*1e12,
                              layer_thickness,thermal_conductivity,csb_heatflux*1e12,n)
@@ -282,10 +294,10 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
                  phi_denFluc,density_fluc)
     sp.saveinputs(outputDir,n,layer_thickness,thermal_conductivity,icb_heatflux, \
            csb_heatflux, mol_conc_oxygen_bulk,mol_conc_SSi, \
-           self_diffusion,sedimentation_constant)
-    sp.saveoutputs(outputDir,F_out,snow_speed_out,icb_speed_out,Q_cmb, Qs, Qs_slurry, \
-                     Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out, \
-                     cmb_temp,acore,state)
+           self_diffusion,sedimentation_constant,Le,Lip,Lix,Pe,St)
+    sp.saveoutputs(outputDir,F_out,snow_speed_out,icb_speed_out,density_jump, \
+                Q_cmb, Qs, Qs_slurry,Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, \
+                cooling_rate_out,cmb_temp,acore,state,stable)
     print('Run {} is saved'.format(outputDir))
 
     return (outputDir, r_out, temp_out, xi_out, j_out, density)

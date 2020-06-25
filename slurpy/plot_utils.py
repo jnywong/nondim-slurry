@@ -12,8 +12,8 @@ import matplotlib.ticker as mticker
 import pickle
 import os
 
+import slurpy.getparameters as gp
 from slurpy.data_utils import readdata
-from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
 from slurpy.coreproperties import icb_radius, earth_radius, aO
 from slurpy.lookup import premdensity, liquidus, premvp, ak135radius, ak135vp
 
@@ -27,7 +27,7 @@ def plot_profile(inputDir):
     except:
         print('Folder does not exist')
     
-    # print('State = {}'.format(outputs.state.iloc[0]))
+    # print('State = {}'.format(outputs.state.iloc[0])) # FIX: doesn't print
     
     # Plots
     csb_radius = pd.to_numeric(profiles.r.iloc[-1])
@@ -269,3 +269,47 @@ def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
         fig.savefig(saveDir+foldername+"/"+filename+".png",format='png', dpi=200, bbox_inches='tight')
         print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
     plt.show()
+    
+#%% Regime diagram
+def plot_regime(layer_thickness,thermal_conductivity,mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8):
+    # Dimensionless parameters
+    csb_radius=gp.getcsbradius(layer_thickness)
+    mass_conc_O,acore=gp.getcsbmassoxygen(mol_conc_oxygen_bulk)
+    Lip,_,density0=gp.getLip(csb_radius)
+    Lix=gp.getLix(mass_conc_O)
+    Le=gp.getLewis(thermal_conductivity,self_diffusion,density0)
+    
+    # Directory
+    str1=str(np.round(Le,2)).replace('.','_')
+    str2=str(np.round(Lip,2)).replace('.','_')
+    str3=str(np.round(Lix,2)).replace('.','_')
+    # Find Le, Lip and Lix
+    foldername="results/Le_{}".format(str1)
+    stemFolder = "Lip_{}_Lix_{}_".format(str2,str3)
+    # Find all Pe, St
+    filenames=[]
+    for files in os.walk(foldername+"/"):
+        for file in files[1]:
+            if file.startswith(stemFolder):
+                filenames.append(file)
+    n = len(filenames)
+    # FIX: get nPe and nSt to make 2D arrays for contour plot
+    Pe = np.zeros(n)
+    St = np.zeros(n)
+    density_jump = np.zeros(n)
+    Q_cmb = np.zeros(n)
+    stable = np.zeros(n)
+    for i in range(n):
+        inputDir = "{}/{}/".format(foldername, filenames[i])
+        data_input=pd.read_csv(inputDir+"inputs.csv",index_col=False)
+        data_output=pd.read_csv(inputDir+"outputs.csv",index_col=False)
+
+        Pe[i] = np.float(data_input['Pe'])
+        St[i] = np.float(data_input['St'])
+        density_jump[i] = np.float(data_output['density_jump'])
+        Q_cmb[i] = np.float(data_output['Q_cmb'])
+        stable[i] = np.float(data_output['stable'])
+        
+        
+    return
+        

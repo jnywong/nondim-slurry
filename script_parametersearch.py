@@ -58,15 +58,17 @@ from slurpy.plot_utils import plot_profile
 plotOn=0 # show temp, xi, solid flux and density profiles
 
 # Input parameters
-layer_thicknesses=np.array([150e3]) # (m)
+layer_thicknesses=np.array([250e3]) # (m)
 # layer_thicknesses=np.array([150e3,200e3,250e3,300e3,350e3,400e3]) #(m)
 thermal_conductivities=np.array([100.]) # (W m^-1 K^-1)
 # icb_heatfluxes=np.array([3.]) # (TW)
 # csb_heatfluxes=np.array([6.]) # (TW)
 
-h=0.05 # stepsize of heat flux through parameter space
-csb_heatfluxes=np.arange(0.05,15.05,h) # (TW)
-icb_heatfluxes=np.arange(0.05,5.05,h) # (TW)
+h=0.5 # stepsize of heat flux through parameter space
+csb_heatfluxes=np.arange(5,6.05,h) # (TW)
+icb_heatfluxes=np.arange(2,4.05,h) # (TW)
+# csb_heatfluxes=np.arange(0.05,15.05,h) # (TW)
+# icb_heatfluxes=np.arange(0.05,5.05,h) # (TW)
 
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
@@ -80,7 +82,7 @@ k=1 # counter to track parameter search progress
 for w,x,y,z in [(w,x,y,z) for w in layer_thicknesses for x in icb_heatfluxes for y in csb_heatfluxes for z in thermal_conductivities]:
     csb_radius = getcsbradius(w)
     csb_temp = liquidus(csb_radius)
-    (outputDir,radius,temp,xi,solidFlux,density)=solveslurry(w,x,y,z,csb_temp,h)
+    (outputDir,radius,temp,xi,solidFlux,density)=solveslurry(w,x,y,z,csb_temp,h,overwrite=1)
     print('Run {}/{}'.format(k,n_tot))
     k+=1
 
