@@ -14,6 +14,7 @@ Created on Thu Jun 25 11:08:06 2020
 #               state slurry
 
 import numpy as np
+import pandas as pd
 from scipy import integrate, interpolate
 
 import slurpy.getparameters as gp
@@ -171,3 +172,41 @@ def stablelayer(density_fluc,radius):
         stable = 1 # stable
         
     return stable
+
+#%% Aggregate data for regime diagram
+def regime(layer_thickness,thermal_conductivity,csb_heatfluxes,
+                icb_heatfluxes,mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8):
+    # Directory
+    nPe = icb_heatfluxes.size
+    nSt = csb_heatfluxes.size
+    Pe = np.zeros((nPe, nSt))
+    St = np.zeros((nPe, nSt))
+    density_jump = np.zeros((nPe, nSt))
+    Q_cmb = np.zeros((nPe, nSt))
+    stable = np.zeros((nPe, nSt))
+    St_crit = gp.getcriticalSt(layer_thickness)
+    for i in range(nPe):
+        for j in range(nSt):
+            (inputDir,_,_,_,outPe,outSt) = gp.getdirectory(layer_thickness,icb_heatfluxes[i], 
+                                       csb_heatfluxes[j], thermal_conductivity)
+            try:
+                data_input=pd.read_csv(inputDir+"inputs.csv",index_col=False)           
+            except FileNotFoundError:
+                Pe[i,j] = outPe
+                St[i,j] = outSt
+                density_jump[i,j] = np.nan
+                Q_cmb[i,j] = np.nan
+                stable[i,j] = np.nan
+                if outSt>St_crit:
+                    print('No solution: {}'.format(inputDir))
+                continue
+            
+            data_output=pd.read_csv(inputDir+"outputs.csv",index_col=False)
+            Pe[i,j] = np.float(data_input['Pe'])
+            St[i,j] = np.float(data_input['St'])
+            density_jump[i,j] = np.float(data_output['density_jump'])
+            Q_cmb[i,j] = np.float(data_output['Q_cmb'])
+            stable[i,j] = np.float(data_output['stable'])     
+            
+    return (Pe, St, density_jump, Q_cmb, stable)            
+    

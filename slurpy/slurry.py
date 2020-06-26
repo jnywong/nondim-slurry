@@ -138,7 +138,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     if not os.path.exists(outputDir):
         os.makedirs(outputDir)
     # Ignore cases where csb heat flux is smaller than icb heat flux
-    elif csb_heatflux < icb_heatflux:
+    elif csb_heatflux <= icb_heatflux:
         return (outputDir,0,0,0,0,0)
     # Impose upper limit on St
     elif St> maxSt:
@@ -230,8 +230,9 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         print('Status = {} - Increase nmax to {}'.format(sol.status,nmax))
         sol=solve_bvp(fun,bcs,r,ic_old(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
         # When nmax is too large, try no initialisation
-        if sol.status!=0 and nmax > 1e6: 
+        if sol.status!=0 and nmax > 1e5: 
             initOn=0
+            print('Status = {} - Try without initialisation'.format(sol.status))
             sol=solve_bvp(fun,bcs,r,ics(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
 
     if sol.status==2:
@@ -245,6 +246,8 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     else:
         state=0
         print("Converged")
+    
+    nmax = 1e3 # Reset nmax
 
     # %% OUTPUT
     F_out=sol.p[0]

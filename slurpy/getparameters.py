@@ -71,8 +71,9 @@ def geticbheatflux(freezing_speed):
     return icb_heatflux
 
 # CSB heat flux
-def getcsbheatflux(St,freezing_speed,density0,csb_radius):
+def getcsbheatflux(St,freezing_speed,density0,csb_radius,icb_heatflux):
     csb_heatflux = St*density0*freezing_speed*latent_heat*4*np.pi*csb_radius**2*1e-12
+    csb_heatflux = St*icb_heatflux*csb_radius**2/icb_radius**2
     return csb_heatflux
 
 # Thermal conductivity
@@ -168,7 +169,32 @@ def getdimensional(layer_thickness,Pe,St,Le, \
     mass_conc_O,acore=getcsbmassoxygen(mol_conc_oxygen_bulk, mol_conc_SSi)
     freezing_speed = getfreezingspeedfromPe(Pe,csb_radius,self_diffusion)
     icb_heatflux=geticbheatflux(freezing_speed)
-    csb_heatflux=getcsbheatflux(St,freezing_speed,density0,csb_radius)
+    csb_heatflux=getcsbheatflux(St,freezing_speed,density0,csb_radius,icb_heatflux)
     thermal_conductivity=getthermalconductivity(Le, density0)
     return (icb_heatflux,csb_heatflux,thermal_conductivity)
 
+#%% Directory name
+def getdirectory(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity, \
+                 mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8):
+    csb_radius = getcsbradius(layer_thickness)
+    mass_conc_O,acore = getcsbmassoxygen(mol_conc_oxygen_bulk)
+    freezing_speed = getfreezingspeed(icb_heatflux)
+    Lip,_,density0 = getLip(csb_radius)
+    Lix = getLix(mass_conc_O)
+    Le = getLewis(thermal_conductivity,self_diffusion,density0)
+    Pe = getPeclet(freezing_speed,csb_radius,self_diffusion)
+    St = getStefan(icb_heatflux,csb_heatflux,csb_radius)
+    str1=str(np.round(Le,2)).replace('.','_')
+    str2=str(np.round(Lip,2)).replace('.','_')
+    str3=str(np.round(Lix,2)).replace('.','_')
+    str4=str(np.round(Pe,2)).replace('.','_')
+    str5=str(np.round(St,2)).replace('.','_')
+    directory="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)     
+    
+    return (directory,Lip,Lix,Le,Pe,St)
+
+# Critical St 
+def getcriticalSt(layer_thickness):
+    St_crit = icb_radius**2/(icb_radius+layer_thickness)**2
+    
+    return St_crit
