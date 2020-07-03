@@ -9,7 +9,7 @@ Created on Wed Apr 1 14:52:41 2020
 # script_seismic.py                                                           #
 ###############################################################################
 
-# Compare slurry P wave speed with PREM, ak135 and Ohtaki et al. (2015) as 
+# Compare slurry P wave speed with PREM, ak135 and Ohtaki et al. (2015) as
 outlined in Wong et al. (in prep).
 
 Parameters

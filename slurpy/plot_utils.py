@@ -11,6 +11,8 @@ import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import pickle
 import os
+import matplotlib as mpl
+mpl.rcParams['text.usetex'] = False
 
 from slurpy.data_utils import readdata
 from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
@@ -46,7 +48,6 @@ def plot_profile(inputDir):
     ax2.plot(radius,profiles.oxygen*acore/aO*100)
     ax2.set(ylabel="Oxygen (mol.%)")
     
-    # Solid flux
     ax3.plot(radius,profiles.solidflux)
     ax3.set(xlabel="Radius (km)",ylabel="Solid flux ($\mathrm{kg m^{-2} s^{-1}}$)")
     
@@ -103,12 +104,12 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
         if i ==0 or i == nTemp-1:
             ax1.plot(radius*1e-3,density,color=colors[i], linewidth = 2,
-                     label =r'$T_l=${:.0f} K'.format(csb_temp[i]))
+                     label =r'$T_{{sl}}=${:.0f} K'.format(csb_temp[i]))
         # Reference case
         elif csb_temp[i]==csb_temp0:
             den_jump0 = density[0]-density[-1]
             ax1.plot(radius*1e-3,density,color='silver', linewidth = 2,
-                     label=r'$T_l=$5457 K')
+                     label=r'$T_\mathregular{{sl}}=$5457 K')
         else:
             ax1.plot(radius*1e-3,density,color=colors[i])
         den_jump.append(density[0]-density[-1])
@@ -136,12 +137,12 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
         if i ==0 or i == nOxy-1:
             ax2.plot(radius*1e-3,density,color=colors[i], linewidth = 2,
-                     label =r'$\xi_O=${:.1f} mol.%'.format(csb_oxygen[i]))
+                     label =r'$\xi_{{sl}}=${:.1f} mol.%'.format(csb_oxygen[i]))
         # Reference case
         elif csb_oxygen[i]==csb_oxy0:
             den_jump0 = density[0]-density[-1]
             ax2.plot(radius*1e-3,density,color='silver', linewidth = 2,
-                     label=r'$\xi_O=$8.0 mol.%')
+                     label=r'$\xi_{{sl}}=$8.0 mol.%')
         else:
             ax2.plot(radius*1e-3,density,color=colors[i])
         den_jump.append(density[0]-density[-1])
@@ -184,8 +185,12 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
         filename = 'sensitivity/sed_{:.0f}'.format(np.log10(sed_con[i])).replace('.','_')
         with open(filename, 'rb') as f:
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
-        ax1.plot(radius*1e-3,density,label=r"$k_\phi={}$".format(my_fun.format_data(sed_con[i])),
-              color=colors[i]) 
+        # FIX:
+        # ax1.plot(radius*1e-3,density,label=r'$k_\phi =$ {} $\mathrm{{kgm^{{-3}}s}}$'.format(my_fun.format_data(sed_con[i])),
+        #        color=colors[i]) 
+        ax1.plot(radius*1e-3,density,label=r'$k_\phi = {} \mathrm{{kgm^{{-3}}s}}$'.format(my_fun.format_data(sed_con[i])).replace('{','{{').replace('}','}}'),
+               color=colors[i]) 
+        ax1.plot(radius*1e-3,density,color=colors[i]) 
         Kphi = getKphi(sed_con[i],radius,mol_conc_oxygen_bulk)
         phi = getphi(Kphi,solidFlux)
         ax2.plot(radius*1e-3,phi,color=colors[i])
@@ -196,6 +201,8 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
     ax1.set(ylabel="Density ($\mathrm{kg m^{-3}}$)") #,yscale="log")
     ax2.set(xlabel="Radius (km)",ylabel="Solid fraction",yscale='log')
     ax2.axhline(0.6,color='k',linestyle='--') # rheological transition
+    # labels = ['$k_\phi =${} $\mathrm{{kgm^{{-3}}s}}$'.format(my_fun.format_data(sed_con[i])),
+              # '1','2','3','4']
     fig.legend(loc='center right', bbox_to_anchor=(1.4, 0.5),fontsize = 11.5)
     ax1.set_xlim([radius[0]*1e-3,radius[-1]*1e-3])
     ax2.set_ylim([1e-4,1])
@@ -246,6 +253,9 @@ def plot_seismic(foldername,filename,saveOn,model='prem',figAspect=0.75):
     # Check density
     # ax1.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
     # ax1.plot(profiles.r*1e-3,profiles.density)
+    
+    max_diff = np.max((vp_fvw-vp_slurry*1e-3)/vp_fvw*100)
+    print('Maximum difference is {:.2f}%'.format(max_diff))
     
     # Plot P wave speed
     ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color='darkgrey',lw=2,label='slurry') #(km/s)

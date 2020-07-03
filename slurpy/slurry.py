@@ -77,11 +77,11 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         eq1=-(Lip*density_seis*gravity_seis+y[3]/y[0])*Rrho/(Lix*St*y[0])
         # oxygen eqn (=dj/dr)
         eq2=(Lip*Rrho*term/(Lix*St*Pe*Rvol) - eq1*(Rrho*speed+y[2]) - \
-             2*y[1]*y[2]/r)/y[1] 
-        # temp eqn (=d2T/dr2)            
+             2*y[1]*y[2]/r)/y[1]
+        # temp eqn (=d2T/dr2)
         eq3=-Pe/Le*((eq2+2/r*y[2])/St + \
             (speed+2*Le/(r*Pe))*y[3])
-        return np.vstack([y[3],eq1,eq2,eq3]) 
+        return np.vstack([y[3],eq1,eq2,eq3])
 
     def bcs(ya,yb,p):
         speed = p[1]
@@ -108,7 +108,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         y[2,:]=np.reshape(solid_flux0,(1,n)) # solid flux
         y[3,:]=np.reshape(temp_grad0,(1,n)) # temp gradient
         return y
-    
+
     # %% DIMENSIONLESS NUMBERS
     csb_radius=gp.getcsbradius(layer_thickness)
     mass_conc_O,acore=gp.getcsbmassoxygen(mol_conc_oxygen_bulk)
@@ -126,15 +126,15 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     scale_temp = gp.get_tempScale(csb_heatflux,csb_radius,density0,freezing_speed)
     scale_xi = mass_conc_O
     scale_j = gp.get_jScale(freezing_speed)
-    
-    
+
+
     # %% OUTPUT DIRECTORY
     str1=str(np.round(Le,2)).replace('.','_')
     str2=str(np.round(Lip,2)).replace('.','_')
     str3=str(np.round(Lix,2)).replace('.','_')
     str4=str(np.round(Pe,2)).replace('.','_')
     str5=str(np.round(St,2)).replace('.','_')
-    
+
     if model == 'ohtaki':
         outputDir="ohtaki/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
     else:
@@ -147,7 +147,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         return (outputDir,0,0,0,0,0)
     # Impose upper limit on St
     elif St> maxSt:
-        return (outputDir,0,0,0,0,0)    
+        return (outputDir,0,0,0,0,0)
     # Skip if directory already exists
 #    else:
 #        return (outputDir,0,0,0,0,0)
@@ -205,21 +205,21 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         # Non-dimensionalise initial guess
         scale_tempOld = gp.get_tempScale(csb_heatflux_old,csb_radius,density0,
                                       freezing_speed)
-        scale_jOld=gp.get_jScale(freezing_speed_old) 
+        scale_jOld=gp.get_jScale(freezing_speed_old)
         temp0=temp0/scale_tempOld
         xi0=xi0/scale_xi
         solid_flux0=solid_flux0/scale_jOld
         temp_grad0=temp_grad0/scale_tempOld*csb_radius
-            
+
 
     # %% MESH
-    r=np.linspace(icb_radius/csb_radius,1,n) 
+    r=np.linspace(icb_radius/csb_radius,1,n)
     y=np.zeros((4,r.size)) # pre-allocate soln array
 
     # %% BOUNDARY VALUE PROBLEM
     # Run solver - default solver tolerance is 1e-3, default max nodes is 1000
     if initOn!=0:
-        print('Initialised with {}'.format(inputDir))        
+        print('Initialised with {}'.format(inputDir))
         sol=solve_bvp(fun,bcs,r,ic_old(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes=nmax)
     elif initOn==0:
         print('No initialisation')
@@ -231,10 +231,10 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         sol=solve_bvp(fun,bcs,r,ics(y),p=[initial_F,initial_speed],tol=tolerance,verbose=2,max_nodes = nmax)
 
     if sol.status==2:
-        state=2 
+        state=2
         print("Singular Jacobian encountered")
     elif sol.status==1:
-        state=1 
+        state=1
         print("Maximum number of mesh nodes exceeded")
     else:
         state=0
@@ -246,7 +246,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     snow_speed_out = icb_speed_out - freezing_speed
     ic_age_out=gp.geticage(icb_speed_out)
     print("Mixing parameter is %.2f" % F_out)
-    print("ICB speed is {:.2e} m/s = {:.3f} mm/yr".format(icb_speed_out,icb_speed_out*1e3*year)) 
+    print("ICB speed is {:.2e} m/s = {:.3f} mm/yr".format(icb_speed_out,icb_speed_out*1e3*year))
     print("IC age is %.2f Ga" % ic_age_out)
 
     # Nondimensional to dimensional
@@ -294,6 +294,3 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     print('Run {} is saved'.format(outputDir))
 
     return (outputDir, r_out, temp_out, xi_out, j_out, density)
-
-
-
