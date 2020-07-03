@@ -15,7 +15,8 @@ import os
 from slurpy.data_utils import readdata
 from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
 from slurpy.coreproperties import icb_radius, earth_radius, aO
-from slurpy.lookup import premdensity, liquidus, premvp, ak135radius, ak135vp
+from slurpy.lookup import premdensity, liquidus, premvp, ak135radius, ak135vp, \
+    ohtaki
 
 # %% 
 def plot_profile(inputDir):
@@ -70,7 +71,7 @@ def plot_profile(inputDir):
     # Zero solid flux
     # ax3.hlines(y=0, xmin=radius[0], xmax=radius.iloc[-1],colors='k',linestyles='dashed')
      
-    # PREM
+    # Seismology
     radius_prem=np.linspace(icb_radius,csb_radius)
     density_prem=premdensity(radius_prem)
     ax4.plot(radius_prem*1e-3,density_prem,'k--')
@@ -212,11 +213,14 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
     plt.show()
 
 # %%
-def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
+def plot_seismic(foldername,filename,saveOn,model='prem',figAspect=0.75):
     w, h = plt.figaspect(figAspect)
     fig, ax = plt.subplots(1,1,figsize=(w,h))
     
-    inputDir = "results/{}/{}/".format(foldername,filename)
+    if model == 'prem':
+        inputDir = "results/prem/{}/{}/".format(foldername,filename)
+    elif model == 'ohtaki':
+        inputDir = "results/ohtaki/{}/{}/".format(foldername,filename)
     
     # Load data
     try:
@@ -232,8 +236,8 @@ def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
     vp_slurry = np.sqrt(bulk_modulus/profiles.density)
     
     # Calculate FVW P wave speed (Ohtaki et al. 2015, fig 11a)
-    x = profiles.r/earth_radius
-    vp_fvw = 3.3*x[0]-3.3*x +10.33
+    vp_fvw,_ = ohtaki(profiles.r)
+    vp_fvw = vp_fvw*1e-3
     
     # Look up AK135
     radius_ak135 = ak135radius()
@@ -253,13 +257,12 @@ def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
     ax.plot(radius_ak135*1e-3,vp_ak135*1e-3,'k',label='ak135')
     ax.vlines(radius_ak135[0]*1e-3,vp_ak135[0]*1e-3,10.4, 'k')
     
-    
     ax.legend(fontsize=11.5)
     ax.set(xlabel="Radius (km)")
     ax.set(ylabel="P wave speed (km/s)")
     ax.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
-    ax.set_ylim([10.18,10.4])
-    plt.yticks(np.arange(10.2,10.4,0.1))
+    ax.set_ylim([10.25,10.4])
+    plt.yticks(np.arange(10.25,10.4,0.1))
     
     if saveOn==1:
         saveDir='figures/seismic/'
@@ -269,3 +272,5 @@ def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
         fig.savefig(saveDir+foldername+"/"+filename+".png",format='png', dpi=200, bbox_inches='tight')
         print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
     plt.show()
+    
+    return profiles.r, vp_slurry, profiles.density

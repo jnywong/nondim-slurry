@@ -47,11 +47,11 @@ import slurpy.data_utils as sp
 
 from scipy.integrate import solve_bvp
 from slurpy.coreproperties import icb_radius, deltaV_solidFe_liquidFe, \
-    density_solidFe, heat_capacity, latent_heat
+    density_solidFe, heat_capacity, latent_heat, year
 
 def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivity, \
             csb_temp, h, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
-            self_diffusion=0.98e-8, mol_conc_SSi=8, \
+            self_diffusion=0.98e-8, mol_conc_SSi=8, model = 'prem', \
             initial_F=5, initial_icAge=0.5, maxSt=6, n=100,
             tolerance=1e-3,nmax=2e4):
 
@@ -61,17 +61,20 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         F=p[0]
         speed=p[1]
         # PREM gravity and density in layer
-        density_prem=lp.premdensity(r*csb_radius)/density0 # dimensionless density
-        gravity_prem=lp.premgravity(r*csb_radius)/csb_gravity # dimensionless gravity
-        density_grad_prem=np.gradient(density_prem,r)
-        gravity_grad_prem=np.gradient(gravity_prem,r)
+        if model =='prem':
+            density_seis=lp.premdensity(r*csb_radius)/density0 # dimensionless density
+        elif model == 'ohtaki':
+            _,density_seis = lp.ohtaki(r*csb_radius)/density0
+        gravity_seis=lp.premgravity(r*csb_radius)/csb_gravity # dimensionless gravity
+        density_grad_seis=np.gradient(density_seis,r)
+        gravity_grad_seis=np.gradient(gravity_seis,r)
 
         # r derivative of barodiffusion term
-        term=gravity_prem*density_prem*np.exp(F*(csb_radius*r-icb_radius)/layer_thickness)* \
+        term=gravity_seis*density_seis*np.exp(F*(csb_radius*r-icb_radius)/layer_thickness)* \
             (F*csb_radius/layer_thickness+2/r-y[3]/y[0]+ \
-             gravity_grad_prem/gravity_prem+density_grad_prem/density_prem)/y[0]
+             gravity_grad_seis/gravity_seis+density_grad_seis/density_seis)/y[0]
         # liquidus (=dxi/dr)
-        eq1=-(Lip*density_prem*gravity_prem+y[3]/y[0])*Rrho/(Lix*St*y[0])
+        eq1=-(Lip*density_seis*gravity_seis+y[3]/y[0])*Rrho/(Lix*St*y[0])
         # oxygen eqn (=dj/dr)
         eq2=(Lip*Rrho*term/(Lix*St*Pe*Rvol) - eq1*(Rrho*speed+y[2]) - \
              2*y[1]*y[2]/r)/y[1] 
@@ -112,7 +115,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     init_snow_speed=gp.getsnowspeed(initial_icAge) # initial guess
     freezing_speed=gp.getfreezingspeed(icb_heatflux)
     initial_speed = (init_snow_speed + freezing_speed)/freezing_speed # dimensionless
-    Lip,csb_gravity,density0=gp.getLip(csb_radius)
+    Lip,csb_gravity,density0=gp.getLip(csb_radius,model)
     Lix=gp.getLix(mass_conc_O)
     St=gp.getStefan(icb_heatflux,csb_heatflux,csb_radius)
     deltaV_liquidFeO_solidFe=gp.getchangevolmelting(mol_conc_oxygen_bulk,density0)
@@ -131,9 +134,11 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     str3=str(np.round(Lix,2)).replace('.','_')
     str4=str(np.round(Pe,2)).replace('.','_')
     str5=str(np.round(St,2)).replace('.','_')
-
-    outputDir="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
-
+    
+    if model == 'ohtaki':
+        outputDir="ohtaki/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
+    else:
+        outputDir="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
     # Make directory if it doesn't exist
     if not os.path.exists(outputDir):
         os.makedirs(outputDir)
@@ -241,7 +246,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     snow_speed_out = icb_speed_out - freezing_speed
     ic_age_out=gp.geticage(icb_speed_out)
     print("Mixing parameter is %.2f" % F_out)
-    print("ICB speed is %.2e m/s" % icb_speed_out) 
+    print("ICB speed is {:.2e} m/s = {:.3f} mm/yr".format(icb_speed_out,icb_speed_out*1e3*year)) 
     print("IC age is %.2f Ga" % ic_age_out)
 
     # Nondimensional to dimensional
@@ -258,7 +263,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     # Slurry density
     density,phi_out,temp_denFluc,xi_denFluc,phi_denFluc,density_fluc= \
         gp.slurrydensity(r_out,temp_out,xi_out,j_out, \
-                         mol_conc_oxygen_bulk,sedimentation_constant)
+                         mol_conc_oxygen_bulk,sedimentation_constant,model=model)
     density_jump=density[0]-density[-1]
     print("Density jump is {:.2f} kg/m^-3".format(density_jump))
     # Stable layer?

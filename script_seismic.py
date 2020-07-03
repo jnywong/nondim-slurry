@@ -37,20 +37,25 @@ filename : str
 # %% IMPORT STATEMENTS
 from slurpy.data_utils import get_outputDir
 from slurpy.plot_utils import plot_seismic
+from slurpy.coreproperties import density_solidFe
 
 # %% MODEL INPUTS
 # Save plot?
 saveOn=1
 
 # Input parameters
-layer_thickness=250e3 # (m)
+layer_thickness=150e3 # (m)
 thermal_conductivity=100. # (W m^-1 K^-1)
-icb_heatflux=3. # (TW)
-csb_heatflux=6. # (TW)
+icb_heatflux=2.5 # (TW)
+csb_heatflux=5. # (TW)
+seis = 'prem'
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
 # Load solution
-foldername, filename = get_outputDir(layer_thickness, icb_heatflux, \
-                                     csb_heatflux, thermal_conductivity)
+foldername, filename = get_outputDir(layer_thickness,icb_heatflux,csb_heatflux, \
+                                     thermal_conductivity, model=seis)
 # Plot and save
-plot_seismic(foldername, filename, saveOn)
+radius,slurry_vp,slurry_density = plot_seismic(foldername, filename, saveOn, model = seis)
+
+rho_bod = density_solidFe - slurry_density[0]
+print('Delta rho bod is {:.2f} kg/m^3'.format(rho_bod))

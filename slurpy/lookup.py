@@ -9,6 +9,7 @@ Created on Thu Dec  6 12:02:37 2018
 import numpy as np
 from numpy import genfromtxt
 from scipy.interpolate import interp1d
+from slurpy.coreproperties import icb_radius, earth_radius
 
 folder="slurpy/lookupdata/"
 
@@ -68,6 +69,16 @@ def ak135radius():
     ak135_radius= genfromtxt(folder+'radAK135.csv', delimiter=',')
     
     return ak135_radius*1e3
+
+def ohtaki(radius):
+    x = radius/earth_radius
+    x0 = icb_radius/earth_radius
+    pwave_speed = (3.3*x0-3.3*x +10.33)*1e3
+    # Calculate bulk modulus from PREM
+    bulk_modulus = premvp(radius)**2*premdensity(radius)
+    density = bulk_modulus/pwave_speed**2 # assuming PREM bulk modulus
+    
+    return pwave_speed, density
 
 def prempressure(radius): # pressure given radius
 
