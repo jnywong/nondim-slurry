@@ -25,7 +25,7 @@ def plot_profile(inputDir):
         # print(inputDir)
         inputs,outputs,profiles = readdata(inputDir)
     except:
-        print('Folder does not exist')
+        print('plot_profile: {} Solution does not exist'.format(inputDir))
         return
     
     # print('State = {}'.format(outputs.state.iloc[0])) # FIX: doesn't print
@@ -184,15 +184,15 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
         filename = 'sensitivity/sed_{:.0f}'.format(np.log10(sed_con[i])).replace('.','_')
         with open(filename, 'rb') as f:
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
-        ax1.plot(radius*1e-3,density,label=r"$k_\phi={}$".format(my_fun.format_data(sed_con[i])),
+        ax1.plot(radius*1e-3,density,label=r"$k_\phi={} kg m^{{-3}}s$".format(my_fun.format_data(sed_con[i])),
               color=colors[i]) 
-        Kphi = getKphi(sed_con[i],radius,mol_conc_oxygen_bulk)
-        phi = getphi(Kphi,solidFlux)
+        Kphi = gp.getKphi(sed_con[i],radius,mol_conc_oxygen_bulk)
+        phi = gp.getphi(Kphi,solidFlux)
         ax2.plot(radius*1e-3,phi,color=colors[i])
                  
     # PREM       
     density_prem=premdensity(radius)
-    ax1.plot(radius*1e-3,density_prem,'k--', label='PREM')
+    ax1.plot(radius*1e-3,density_prem,'k--')
     ax1.set(ylabel="Density ($\mathrm{kg m^{-3}}$)") #,yscale="log")
     ax2.set(xlabel="Radius (km)",ylabel="Solid fraction",yscale='log')
     ax2.axhline(0.6,color='k',linestyle='--') # rheological transition

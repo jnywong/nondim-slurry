@@ -72,7 +72,7 @@ def geticbheatflux(freezing_speed):
 
 # CSB heat flux
 def getcsbheatflux(St,freezing_speed,density0,csb_radius,icb_heatflux):
-    csb_heatflux = St*density0*freezing_speed*latent_heat*4*np.pi*csb_radius**2*1e-12
+    # csb_heatflux = St*density0*freezing_speed*latent_heat*4*np.pi*csb_radius**2*1e-12
     csb_heatflux = St*icb_heatflux*csb_radius**2/icb_radius**2
     return csb_heatflux
 
@@ -150,13 +150,13 @@ def getStefan(icb_heatflux,csb_heatflux,csb_radius):
     return St
 
 # Lewis number
-def getLewis(thermal_conductivity,self_diffusion,density0):
+def getLewis(thermal_conductivity,density0,self_diffusion=0.98e-8):
     Le=thermal_conductivity/(density0*
                                 heat_capacity*self_diffusion)
     return Le
 
 # Peclet number
-def getPeclet(freezing_speed,csb_radius,self_diffusion):
+def getPeclet(freezing_speed,csb_radius,self_diffusion=0.98e-8):
     Pe=freezing_speed*csb_radius/(self_diffusion)
     return Pe
 
@@ -186,7 +186,7 @@ def getdirectory(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity,
     St = getStefan(icb_heatflux,csb_heatflux,csb_radius)
     str1=str(np.round(Le,2)).replace('.','_')
     str2=str(np.round(Lip,2)).replace('.','_')
-    str3=str(np.round(Lix,2)).replace('.','_')
+    str3=str(np.round(Lix,3)).replace('.','_')
     str4=str(np.round(Pe,2)).replace('.','_')
     str5=str(np.round(St,2)).replace('.','_')
     directory="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)     

@@ -174,8 +174,8 @@ def stablelayer(density_fluc,radius):
     return stable
 
 #%% Aggregate data for regime diagram
-def regime(layer_thickness,thermal_conductivity,csb_heatfluxes,
-                icb_heatfluxes,mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8):
+def regime(layer_thickness,thermal_conductivity,csb_heatfluxes,icb_heatfluxes,
+           maxSt,mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8):
     # Directory
     nPe = icb_heatfluxes.size
     nSt = csb_heatfluxes.size
@@ -190,14 +190,14 @@ def regime(layer_thickness,thermal_conductivity,csb_heatfluxes,
             (inputDir,_,_,_,outPe,outSt) = gp.getdirectory(layer_thickness,icb_heatfluxes[i], 
                                        csb_heatfluxes[j], thermal_conductivity)
             try:
-                data_input=pd.read_csv(inputDir+"inputs.csv",index_col=False)           
+                data_input=pd.read_csv(inputDir+"inputs.csv",index_col=False)       
             except FileNotFoundError:
                 Pe[i,j] = outPe
                 St[i,j] = outSt
                 density_jump[i,j] = np.nan
                 Q_cmb[i,j] = np.nan
                 stable[i,j] = np.nan
-                if outSt>St_crit:
+                if outSt > St_crit and outSt < maxSt:
                     print('No solution: {}'.format(inputDir))
                 continue
             

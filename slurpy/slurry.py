@@ -24,7 +24,7 @@ icb_heatfluxes : numpy array
     Specify heat flux through the ICB (TW).
 csb_heatfluxes : numpy array
     Specify heat flux through the CSB (TW).
-h : float
+h_icb, h_csb : float
     Specify step size through the heat fluxes for parameter searches.
 sensitivityOn : int
     Toggle manual control of the CSB temperature and/or CSB oxygen concentration for sensitivity studies.
@@ -51,8 +51,8 @@ from slurpy.coreproperties import icb_radius, deltaV_solidFe_liquidFe, \
     density_solidFe, heat_capacity, latent_heat
 
 def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivity, \
-            csb_temp, h, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
-            self_diffusion=0.98e-8, mol_conc_SSi=8, \
+            csb_temp, h_icb, h_csb, mol_conc_oxygen_bulk=8, \
+            sedimentation_constant=1e-2, self_diffusion=0.98e-8, mol_conc_SSi=8, \
             initial_F=5, initial_icAge=0.5, maxSt=6, n=100,
             tolerance=1e-3,nmax=1e3,overwrite=0):
 
@@ -128,23 +128,25 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     # %% OUTPUT DIRECTORY
     str1=str(np.round(Le,2)).replace('.','_')
     str2=str(np.round(Lip,2)).replace('.','_')
-    str3=str(np.round(Lix,2)).replace('.','_')
+    str3=str(np.round(Lix,3)).replace('.','_')
     str4=str(np.round(Pe,2)).replace('.','_')
     str5=str(np.round(St,2)).replace('.','_')
 
     outputDir="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
 
     # Make directory if it doesn't exist
-    if not os.path.exists(outputDir):
+    if not os.path.exists(outputDir) and St < maxSt:
         os.makedirs(outputDir)
     # Ignore cases where csb heat flux is smaller than icb heat flux
-    elif csb_heatflux <= icb_heatflux:
-        return (outputDir,0,0,0,0,0)
+    # elif csb_heatflux <= icb_heatflux:
+        # return (outputDir,0,0,0,0,0)
     # Impose upper limit on St
     elif St> maxSt:
+        print('Skip {}: St > maxSt'.format(outputDir))
         return (outputDir,0,0,0,0,0)    
     # Skip if directory already exists
     elif os.path.exists(outputDir) and overwrite==0:
+        print('Skip {}: Directory already exists'.format(outputDir))
         return (outputDir,0,0,0,0,0)    
 
     # Load previous solution to initialise
@@ -156,7 +158,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     # while state == 2:
     while state != 0:
         try:
-            csb_heatflux_old=csb_heatflux-m*h
+            csb_heatflux_old=csb_heatflux-m*h_csb
             St_old=gp.getStefan(icb_heatflux,csb_heatflux_old,csb_radius)
             str5=str(np.round(St_old,2)).replace('.','_')
             inputDir="results/Le_{}/Lip_{}_Lix_{}_Pe_{}_St_{}/".format(str1,str2,str3,str4,str5)
@@ -171,7 +173,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
             # while state == 2:
             while state != 0:
                 try:
-                    icb_heatflux_old = icb_heatflux-m*h
+                    icb_heatflux_old = icb_heatflux-m*h_icb
                     freezing_speed_old=gp.getfreezingspeed(icb_heatflux_old)
                     Pe_old=gp.getPeclet(freezing_speed_old,csb_radius,self_diffusion)
                     St_old=gp.getStefan(icb_heatflux_old,csb_heatflux,csb_radius)
