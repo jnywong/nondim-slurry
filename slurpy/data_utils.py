@@ -89,11 +89,12 @@ def readdata(inputDir):
     return data_inputs,data_outputs,data_profiles    
 
 def get_outputDir(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity,
-                  mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8,mol_conc_SSi=8):
+                  mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8,mol_conc_SSi=8,
+                  model='prem'):
     csb_radius=gp.getcsbradius(layer_thickness)
     mass_conc_O,acore=gp.getcsbmassoxygen(mol_conc_oxygen_bulk)
     freezing_speed=gp.getfreezingspeed(icb_heatflux)
-    Lip,csb_gravity,density0=gp.getLip(csb_radius)
+    Lip,csb_gravity,density0=gp.getLip(csb_radius,model)
     Lix=gp.getLix(mass_conc_O)
     St=gp.getStefan(icb_heatflux,csb_heatflux,csb_radius)
     Le=gp.getLewis(thermal_conductivity,self_diffusion,density0)

@@ -9,7 +9,7 @@ Created on Wed Apr 1 14:52:41 2020
 # script_seismic.py                                                           #
 ###############################################################################
 
-# Compare slurry P wave speed with PREM, ak135 and Ohtaki et al. (2015) as 
+# Compare slurry P wave speed with PREM, ak135 and Ohtaki et al. (2015) as
 outlined in Wong et al. (in prep).
 
 Parameters
@@ -37,21 +37,25 @@ filename : str
 # %% IMPORT STATEMENTS
 import numpy as np
 from slurpy.plot_utils import plot_seismic
+from slurpy.coreproperties import density_solidFe
 
 # %% MODEL INPUTS
 # Save plot?
 saveOn=1
 
 # Input parameters
-layer_thickness=np.array([150e3]) # (m)
-thermal_conductivity=np.array([100.,30.]) # (W m^-1 K^-1)
-icb_heatflux=np.array([2.5]) # (TW)
-csb_heatflux=np.array([5.])
+layer_thickness=150e3 # (m)
+thermal_conductivity=100. # (W m^-1 K^-1)
+icb_heatflux=2.5 # (TW)
+csb_heatflux=5. # (TW)
+seis = 'prem'
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
 # Load solution
-# foldername, filename = get_outputDir(layer_thickness, icb_heatflux, \
-                                     # csb_heatflux, thermal_conductivity)
+foldername, filename = get_outputDir(layer_thickness,icb_heatflux,csb_heatflux, \
+                                     thermal_conductivity, model=seis)
 # Plot and save
-radius,density,pwave_speed = plot_seismic(layer_thickness, thermal_conductivity,
-                                          icb_heatflux, csb_heatflux, saveOn)
+radius,slurry_vp,slurry_density = plot_seismic(foldername, filename, saveOn, model = seis)
+
+rho_bod = density_solidFe - slurry_density[0]
+print('Delta rho bod is {:.2f} kg/m^3'.format(rho_bod))

@@ -22,7 +22,7 @@ from scipy import integrate, interpolate
 from slurpy.coreproperties import icb_radius,density_liquidO, \
 density_solidFe,heat_capacity,latent_heat,aO,aFe,aSSi,deltaV_solidFe_liquidFe, \
 gigayear, alphaT, alphaXi, bulk_modulus, cmb_radius, gruneisen
-from slurpy.lookup import liquidus, premgravity, premdensity, premvp
+from slurpy.lookup import liquidus, premgravity, premdensity, premvp, ohtaki
 
 # CSB radius
 def getcsbradius(layer_thickness):
@@ -135,9 +135,12 @@ def get_jScale(freezing_speed):
 
 #%% Dimensionless parameters
 # Lip
-def getLip(csb_radius):
+def getLip(csb_radius,model='prem'):
     gravity=premgravity(csb_radius)
-    density=premdensity(csb_radius)
+    if model == 'prem':
+        density=premdensity(csb_radius)
+    elif model == 'ohtaki':
+        _,density = ohtaki(csb_radius)
     Lip=deltaV_solidFe_liquidFe*gravity*density*csb_radius/latent_heat
     return Lip,gravity,density
 
@@ -177,10 +180,13 @@ def getdimensional(layer_thickness,Pe,St,Le, \
 
 # %% Postprocessing
 def slurrydensity(radius,temp,xi,solidflux,mol_conc_oxygen_bulk, \
-                  sedimentation_constant,mol_conc_SSi=8):
+                  sedimentation_constant,mol_conc_SSi=8,model='prem'):
     # Density profile across slurry layer    
     csb_radius=radius[-1]
-    csb_density=premdensity(csb_radius)
+    if model=='prem':
+        csb_density=premdensity(csb_radius)
+    elif model =='ohtaki':
+        _,csb_density=ohtaki(csb_radius)
     # Solid fraction
     Kphi=getKphi(sedimentation_constant,radius,mol_conc_oxygen_bulk)
     phi=(-solidflux/Kphi)**(3/5)

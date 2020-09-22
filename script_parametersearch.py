@@ -80,7 +80,7 @@ k=1 # counter to track parameter search progress
 for w,x,y,z in [(w,x,y,z) for w in layer_thicknesses for x in icb_heatfluxes for y in csb_heatfluxes for z in thermal_conductivities]:
     csb_radius = getcsbradius(w)
     csb_temp = liquidus(csb_radius)
-    (outputDir,radius,temp,xi,solidFlux,density)=solveslurry(w,x,y,z,csb_temp,h)
+    (outputDir,radius,temp,xi,solidFlux,density)=solveslurry(w,x,y,z,csb_temp,h) #,model='ohtaki')
     print('Run {}/{}'.format(k,n_tot))
     k+=1
 
