@@ -14,6 +14,7 @@ Created on Fri Nov 16 11:35:00 2018
 
 # Time
 gigayear = 1e9*365.25*24*60*60; # billion years in seconds
+year = 365.25*24*60*60
 
 # PREM
 icb_radius = 1.2215e6 # ICB radius

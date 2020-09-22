@@ -9,14 +9,15 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
+from matplotlib import cm
 import pickle
 import os
 import matplotlib as mpl
 mpl.rcParams['text.usetex'] = False
 
-from slurpy.data_utils import readdata
+from slurpy.data_utils import readdata, get_outputDir
 from slurpy.getparameters import getcsbmassoxygen, getKphi, getphi
-from slurpy.coreproperties import icb_radius, earth_radius, aO
+from slurpy.coreproperties import icb_radius, earth_radius, aO, density_solidFe
 from slurpy.lookup import premdensity, liquidus, premvp, ak135radius, ak135vp
 
 # %% 
@@ -219,62 +220,197 @@ def plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75):
     plt.show()
 
 # %%
-def plot_seismic(foldername,filename,saveOn,figAspect=0.75):
+def plot_seismic(layer_thickness, thermal_conductivity,
+                             icb_heatflux, csb_heatflux,saveOn,figAspect=0.75):
     w, h = plt.figaspect(figAspect)
-    fig, ax = plt.subplots(1,1,figsize=(w,h))
+    fig, ax = plt.subplots(1,1,figsize=(1.25*w,1.25*h))
     
-    inputDir = "results/{}/{}/".format(foldername,filename)
+    n = layer_thickness.size*thermal_conductivity.size \
+        *icb_heatflux.size*csb_heatflux.size
+    
+    if n!=1:
+        fig_label = [r'high $Le$', r'low $Le$']
+        start = 0.2
+        stop = 0.5
+        cm_subsection = np.linspace(start, stop, n) 
+        colors = [ cm.gray_r(x) for x in cm_subsection ]
     
     # Load data
-    try:
-        inputs,outputs,profiles = readdata(inputDir)
-    except:
-        print('{} does not exist'.format(inputDir))
-        return
-    
-    # Calculate bulk modulus from PREM
-    bulk_modulus = premvp(profiles.r)**2*premdensity(profiles.r)
-    
-    # Calculate vp using slurry density and PREM bulk modulus
-    vp_slurry = np.sqrt(bulk_modulus/profiles.density)
-    
-    # Calculate FVW P wave speed (Ohtaki et al. 2015, fig 11a)
-    x = profiles.r/earth_radius
-    vp_fvw = 3.3*x[0]-3.3*x +10.33
-    
+    k=0
+    for w,x,y,z in [(w,x,y,z) for w in layer_thickness for x in icb_heatflux for y in csb_heatflux for z in thermal_conductivity]:
+        foldername, filename = get_outputDir(w,x,y,z)    
+        inputDir = "results/{}/{}/".format(foldername,filename)
+        
+        try:
+            inputs,outputs,profiles = readdata(inputDir)
+        except:
+            print('{} does not exist'.format(inputDir))
+            return
+        
+        # Calculate bulk modulus from PREM
+        bulk_modulus = premvp(profiles.r)**2*premdensity(profiles.r)
+        
+        # Calculate vp using slurry density and PREM bulk modulus
+        vp_slurry = np.sqrt(bulk_modulus/profiles.density)
+        
+        # Calculate FVW P wave speed (Ohtaki et al. 2015, fig 11a)
+        x = profiles.r/earth_radius
+        vp_fvw = 3.3*x[0]-3.3*x +10.33
+              
+        max_diff = np.max((vp_fvw-vp_slurry*1e-3)/vp_fvw*100)
+        print('Maximum difference with Ohtaki et al. (2015) is {:.2f}%'.format(max_diff))
+        max_diff = np.max((premvp(profiles.r)-vp_slurry)/premvp(profiles.r)*100)
+        print('Maximum difference with PREM is {:.2f}%'.format(max_diff))
+        print('Density on slurry side of ICB is {:.2f}'.format(profiles.density[0]))
+        density_jump = profiles.density[0] - profiles.density.iloc[-1]
+        print('Density jump is {:.2f}'.format(density_jump))
+        rho_bod = density_solidFe - profiles.density[0]
+        print('Delta rho bod is {:.2f}'.format(rho_bod))
+        rho_mod = rho_bod + density_jump
+        print('Delta rho mod is {:.2f}'.format(rho_mod))
+        
+        # Plot P wave speed
+        if n==1:
+            ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color='darkgrey',lw=2,label='slurry') #(km/s)
+            ax.vlines(profiles.r[0]*1e-3,vp_slurry[0]*1e-3,10.4,color='darkgrey',lw=2)
+        else:
+            ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color=colors[k],lw=2,label=fig_label[k]) #(km/s)
+            ax.vlines(profiles.r[0]*1e-3,vp_slurry[0]*1e-3,10.4,color=colors[k],lw=2)        
+        # Check density
+        # ax1.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
+        # ax1.plot(profiles.r*1e-3,profiles.density)  
+        k+=1
+
     # Look up AK135
     radius_ak135 = ak135radius()
     vp_ak135 = ak135vp(radius_ak135)
-    
-    # Check density
-    # ax1.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
-    # ax1.plot(profiles.r*1e-3,profiles.density)
-    
-    max_diff = np.max((vp_fvw-vp_slurry*1e-3)/vp_fvw*100)
-    print('Maximum difference is {:.2f}%'.format(max_diff))
-    
-    # Plot P wave speed
-    ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color='darkgrey',lw=2,label='slurry') #(km/s)
-    ax.vlines(profiles.r[0]*1e-3,vp_slurry[0]*1e-3,10.4,color='darkgrey',lw=2)
+  
     ax.plot(profiles.r*1e-3,vp_fvw,color='blue',lw=2,ls=':',label='Ohtaki et al. (2015)')
     ax.vlines(profiles.r[0]*1e-3,vp_fvw[0],10.4,color='blue',lw=2,ls=':')
     ax.plot(profiles.r*1e-3,premvp(profiles.r)*1e-3,'k--',label='PREM')
     ax.vlines(profiles.r[0]*1e-3,premvp(profiles.r[0])*1e-3,10.4, 'k', linestyle='--')
     ax.plot(radius_ak135*1e-3,vp_ak135*1e-3,'k',label='ak135')
     ax.vlines(radius_ak135[0]*1e-3,vp_ak135[0]*1e-3,10.4, 'k')
-    
+        
     ax.legend(fontsize=11.5)
     ax.set(xlabel="Radius (km)")
     ax.set(ylabel="P wave speed (km/s)")
     ax.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
-    ax.set_ylim([10.18,10.4])
+    ax.set_ylim([10.2,10.4])
     plt.yticks(np.arange(10.2,10.4,0.1))
     
     if saveOn==1:
         saveDir='figures/seismic/'
-        if not os.path.exists(saveDir+foldername):
-            os.makedirs(saveDir+foldername)
-        fig.savefig(saveDir+foldername+"/"+filename+".pdf",format='pdf', dpi=200, bbox_inches='tight')
-        fig.savefig(saveDir+foldername+"/"+filename+".png",format='png', dpi=200, bbox_inches='tight')
-        print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
+        if n==1:
+            if not os.path.exists(saveDir+foldername):
+                os.makedirs(saveDir+foldername)
+            fig.savefig(saveDir+foldername+"/"+filename+".pdf",format='pdf', dpi=200, bbox_inches='tight')
+            fig.savefig(saveDir+foldername+"/"+filename+".png",format='png', dpi=200, bbox_inches='tight')
+            print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
+        else:
+            if not os.path.exists(saveDir+'compare'):
+                os.makedirs(saveDir+'compare')
+            fig.savefig(saveDir+"compare/seismic.pdf",format='pdf', dpi=200, bbox_inches='tight')
+            fig.savefig(saveDir+"compare/seismic.png",format='png', dpi=200, bbox_inches='tight')
+            print('Figure saved as {}'.format(saveDir+"compare/seismic.pdf"))
     plt.show()
+    
+    return profiles.r, profiles.density, vp_slurry
+
+# %%
+def plot_seismic_dark(layer_thickness, thermal_conductivity,
+                             icb_heatflux, csb_heatflux,saveOn,figAspect=0.75):
+    w, h = plt.figaspect(figAspect)
+    fig, ax = plt.subplots(1,1,figsize=(1.25*w,1.25*h))
+    
+    n = layer_thickness.size*thermal_conductivity.size \
+        *icb_heatflux.size*csb_heatflux.size
+    
+    if n!=1:
+        fig_label = [r'high $Le$', r'low $Le$']
+        start = 0.2
+        stop = 0.5
+        cm_subsection = np.linspace(start, stop, n) 
+        colors = [ cm.gray_r(x) for x in cm_subsection ]
+    
+    # Load data
+    k=0
+    for w,x,y,z in [(w,x,y,z) for w in layer_thickness for x in icb_heatflux for y in csb_heatflux for z in thermal_conductivity]:
+        foldername, filename = get_outputDir(w,x,y,z)    
+        inputDir = "results/{}/{}/".format(foldername,filename)
+        
+        try:
+            inputs,outputs,profiles = readdata(inputDir)
+        except:
+            print('{} does not exist'.format(inputDir))
+            return
+        
+        # Calculate bulk modulus from PREM
+        bulk_modulus = premvp(profiles.r)**2*premdensity(profiles.r)
+        
+        # Calculate vp using slurry density and PREM bulk modulus
+        vp_slurry = np.sqrt(bulk_modulus/profiles.density)
+        
+        # Calculate FVW P wave speed (Ohtaki et al. 2015, fig 11a)
+        x = profiles.r/earth_radius
+        vp_fvw = 3.3*x[0]-3.3*x +10.33
+              
+        max_diff = np.max((vp_fvw-vp_slurry*1e-3)/vp_fvw*100)
+        print('Maximum difference with Ohtaki et al. (2015) is {:.2f}%'.format(max_diff))
+        max_diff = np.max((premvp(profiles.r)-vp_slurry)/premvp(profiles.r)*100)
+        print('Maximum difference with PREM is {:.2f}%'.format(max_diff))
+        print('Density on slurry side of ICB is {:.2f}'.format(profiles.density[0]))
+        density_jump = profiles.density[0] - profiles.density.iloc[-1]
+        print('Density jump is {:.2f}'.format(density_jump))
+        rho_bod = density_solidFe - profiles.density[0]
+        print('Delta rho bod is {:.2f}'.format(rho_bod))
+        rho_mod = rho_bod + density_jump
+        print('Delta rho mod is {:.2f}'.format(rho_mod))
+        
+        # Plot P wave speed
+        if n==1:
+            ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color='darkgrey',lw=2,label='slurry') #(km/s)
+            ax.vlines(profiles.r[0]*1e-3,vp_slurry[0]*1e-3,10.4,color='darkgrey',lw=2)
+        else:
+            ax.plot(profiles.r*1e-3,vp_slurry*1e-3,color=colors[k],lw=2,label=fig_label[k]) #(km/s)
+            ax.vlines(profiles.r[0]*1e-3,vp_slurry[0]*1e-3,10.4,color=colors[k],lw=2)        
+        # Check density
+        # ax1.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
+        # ax1.plot(profiles.r*1e-3,profiles.density)  
+        k+=1
+
+    # Look up AK135
+    radius_ak135 = ak135radius()
+    vp_ak135 = ak135vp(radius_ak135)
+  
+    ax.plot(profiles.r*1e-3,vp_fvw,color='blue',lw=2,ls=':',label='Ohtaki et al. (2015)')
+    ax.vlines(profiles.r[0]*1e-3,vp_fvw[0],10.4,color='blue',lw=2,ls=':')
+    ax.plot(profiles.r*1e-3,premvp(profiles.r)*1e-3,color='white',ls='--',label='PREM')
+    ax.vlines(profiles.r[0]*1e-3,premvp(profiles.r[0])*1e-3,10.4, 'white', linestyle='--')
+    ax.plot(radius_ak135*1e-3,vp_ak135*1e-3,'white',label='ak135')
+    ax.vlines(radius_ak135[0]*1e-3,vp_ak135[0]*1e-3,10.4, 'white')
+        
+    ax.legend(fontsize=11.5)
+    ax.set(xlabel="Radius (km)")
+    ax.set(ylabel="P wave speed (km/s)")
+    ax.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
+    ax.set_ylim([10.2,10.4])
+    plt.yticks(np.arange(10.2,10.4,0.1))
+    
+    if saveOn==1:
+        saveDir='figures/seismic/'
+        if n==1:
+            if not os.path.exists(saveDir+foldername):
+                os.makedirs(saveDir+foldername)
+            fig.savefig(saveDir+foldername+"/"+filename+".pdf",format='pdf', dpi=200, bbox_inches='tight')
+            fig.savefig(saveDir+foldername+"/"+filename+".png",format='png', dpi=200, bbox_inches='tight')
+            print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
+        else:
+            if not os.path.exists(saveDir+'compare'):
+                os.makedirs(saveDir+'compare')
+            fig.savefig(saveDir+"compare/seismic_dark.pdf",format='pdf', dpi=200, bbox_inches='tight')
+            fig.savefig(saveDir+"compare/seismic_dark.png",format='png', dpi=200, bbox_inches='tight')
+            print('Figure saved as {}'.format(saveDir+"compare/seismic.pdf"))
+    plt.show()
+    
+    return profiles.r, profiles.density, vp_slurry

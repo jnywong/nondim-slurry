@@ -98,9 +98,9 @@ def getsnowspeed(ic_age):
     snow_speed=icb_radius/(3*ic_age*gigayear)
     return snow_speed
 
-# IC age given snow speed
-def geticage(snow_speed):
-    ic_age=icb_radius/(3*snow_speed*gigayear)
+# IC age given ICB speed
+def geticage(icb_speed):
+    ic_age=icb_radius/(3*icb_speed*gigayear)
     return ic_age
 
 # Freezing speed given Pe

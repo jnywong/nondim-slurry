@@ -47,7 +47,7 @@ import slurpy.data_utils as sp
 
 from scipy.integrate import solve_bvp
 from slurpy.coreproperties import icb_radius, deltaV_solidFe_liquidFe, \
-    density_solidFe, heat_capacity, latent_heat
+    density_solidFe, heat_capacity, latent_heat, year
 
 def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivity, \
             csb_temp, h=0.05, mol_conc_oxygen_bulk=8, sedimentation_constant=1e-2,
@@ -241,7 +241,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     snow_speed_out = icb_speed_out - freezing_speed
     ic_age_out=gp.geticage(icb_speed_out)
     print("Mixing parameter is %.2f" % F_out)
-    print("ICB speed is %.2e m/s" % icb_speed_out) 
+    print("ICB speed is {:.2e} m/s = {:.2f} mm/yr".format(icb_speed_out,icb_speed_out*1e3*year)) 
     print("IC age is %.2f Ga" % ic_age_out)
 
     # Nondimensional to dimensional

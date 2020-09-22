@@ -35,7 +35,7 @@ filename : str
 """
 
 # %% IMPORT STATEMENTS
-from slurpy.data_utils import get_outputDir
+import numpy as np
 from slurpy.plot_utils import plot_seismic
 
 # %% MODEL INPUTS
@@ -43,14 +43,15 @@ from slurpy.plot_utils import plot_seismic
 saveOn=1
 
 # Input parameters
-layer_thickness=250e3 # (m)
-thermal_conductivity=100. # (W m^-1 K^-1)
-icb_heatflux=3.5 # (TW)
-csb_heatflux=6 # (TW)
+layer_thickness=np.array([150e3]) # (m)
+thermal_conductivity=np.array([100.,30.]) # (W m^-1 K^-1)
+icb_heatflux=np.array([2.5]) # (TW)
+csb_heatflux=np.array([5.])
 #------------------------------------------------------------------------------
 # %% RUN THE CODE
 # Load solution
-foldername, filename = get_outputDir(layer_thickness, icb_heatflux, \
-                                     csb_heatflux, thermal_conductivity)
+# foldername, filename = get_outputDir(layer_thickness, icb_heatflux, \
+                                     # csb_heatflux, thermal_conductivity)
 # Plot and save
-plot_seismic(foldername, filename, saveOn)
+radius,density,pwave_speed = plot_seismic(layer_thickness, thermal_conductivity,
+                                          icb_heatflux, csb_heatflux, saveOn)

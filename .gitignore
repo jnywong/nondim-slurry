@@ -1,3 +1,6 @@
+# Scripts
+script_seismic_dark.py
+
 *.DS_Store
 results/
 figures/
