@@ -1,5 +1,6 @@
 # Scripts
 script_seismic_dark.py
+test.py
 
 *.DS_Store
 results/

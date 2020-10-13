@@ -82,9 +82,9 @@ def savephaseboundaries(outputDir,nPe,nSt,Pe,St,density_jump,cmb_heatflux,
 
 def readdata(inputDir):
     # Data from spherical model
-    data_inputs=pd.read_csv(inputDir+"inputs.csv",index_col=False)
-    data_outputs=pd.read_csv(inputDir+"outputs.csv",index_col=False)
-    data_profiles=pd.read_csv(inputDir+"profiles.csv",index_col=False)
+    data_inputs=pd.read_csv("results/"+inputDir+"/inputs.csv",index_col=False)
+    data_outputs=pd.read_csv("results/"+inputDir+"/outputs.csv",index_col=False)
+    data_profiles=pd.read_csv("results/"+inputDir+"/profiles.csv",index_col=False)
     
     return data_inputs,data_outputs,data_profiles    
 

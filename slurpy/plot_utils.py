@@ -400,3 +400,76 @@ def plot_seismic_dark(layer_thickness, thermal_conductivity,
     plt.show()
 
     return profiles.r, vp_slurry, profiles.density
+
+# %%
+def plot_compare(layer_thickness,csb_heatflux,icb_heatflux,thermal_conductivity,
+                 saveOn,saveTag,mol_conc_oxygen_bulk=8.,mol_conc_SSi=8.,
+                 self_diffusion=0.98e-8,aspectRatio=0.75,tempMin=5400,
+                 tempMax = 5800,xiMin = 6,xiMax = 8,jMin = -3.5e-7,jMax = 0,
+                 denMin=11900,denMax = 12250):
+    
+    w,h= plt.figaspect(aspectRatio)*2
+    fig=plt.figure()
+    fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,sharex=True,figsize=(w,h))
+    colors = plt.cm.tab10(np.linspace(0,1,layer_thickness.size)) 
+    plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab10.colors)
+    
+    for i in (range(layer_thickness.size)):
+        foldername,filename = get_outputDir(layer_thickness[i],icb_heatflux,
+                                            csb_heatflux,thermal_conductivity)
+        inputDir=foldername+"/"+filename
+        data_in,data_out,data_profiles=readdata(inputDir)
+   
+        radius=(data_profiles['r'])*1e-3
+        oxygen=data_profiles['oxygen']
+        (mass_conc_O,acore) =getcsbmassoxygen(data_in.oxygen_bulk)
+        acore=float(acore)
+        ax1.plot(radius,data_profiles['temp'],label='_nolegend_')#, color=colors[i])
+        ax2.plot(radius,oxygen*acore/aO*100)#, color=colors[i])
+        ax3.plot(radius,data_profiles['solidflux'])#,color=colors[i])
+        ax4.plot(radius,data_profiles['density'],
+                 label='{:.0f} km'.format(layer_thickness[i]*1e-3))#,color=colors[i])
+    
+    # Liquidus        
+    radius_liquidus=np.linspace(icb_radius,icb_radius+400e3)
+    temp_liquidus=liquidus(radius_liquidus)
+    ax1.plot(radius_liquidus*1e-3,temp_liquidus,'k--',label = 'Liquidus (Davies et al. 2015)')
+     
+    # PREM
+    radius_prem=np.linspace(icb_radius,icb_radius+400e3)
+    density_prem=premdensity(radius_prem)
+    ax4.plot(radius_prem*1e-3,density_prem,'k--',label='PREM')
+    ax4.set(xlabel="Radius (km)",ylabel="Density ($\mathrm{kg m^{-3}}$)")
+    
+    # Axis titles
+    ax1.set(ylabel="Temperature (K)")
+    ax2.set(ylabel="Oxygen (mol.%)")
+    ax3.set(xlabel="Radius (km)",ylabel="Solid flux ($\mathrm{kg m^{-2} s^{-1}}$)")
+    
+    # Legend
+    ax1.legend(fontsize=11.5,loc=1)
+    ax4.legend(fontsize=11.5,loc=1)
+    
+    # Axis limits
+    ax1.set_ylim([tempMin,tempMax])
+    ax2.set_ylim([xiMin,xiMax])
+    ax3.set_ylim([jMin,jMax])
+    ax4.set_ylim([denMin,denMax])
+    
+    ax1.set_xlim([1220,(icb_radius+400e3)*1e-3])
+    
+    # Subfigure labels
+    ax1.text(1225,tempMax-23,'(a)',fontsize=14)
+    ax2.text(1225,xiMax - 0.12,'(b)',fontsize=14)
+    ax3.text(1225,jMax - .2e-7,'(c)',fontsize=14)
+    ax4.text(1225,denMax - 20,'(d)',fontsize=14)
+    
+    plt.tight_layout()
+    
+    if saveOn==1:
+        if not os.path.exists('figures/profiles'):
+            os.makedirs('figures/profiles')
+        saveName=foldername+"_"+filename+saveTag
+        plt.savefig('figures/profiles/'+saveName+'.pdf',format='pdf',dpi=200)
+        
+    plt.show()

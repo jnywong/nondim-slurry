@@ -45,10 +45,10 @@ from slurpy.coreproperties import density_solidFe
 saveOn=1
 
 # Input parameters
-layer_thickness=np.array([250e3]) # (m)
+layer_thickness=np.array([150e3]) # (m)
 thermal_conductivity=np.array([100.]) # (W m^-1 K^-1)
-icb_heatflux=np.array([3.5]) # (TW)
-csb_heatflux=np.array([6.])
+icb_heatflux=np.array([2.5]) # (TW)
+csb_heatflux=np.array([5.])
 seis='prem'
 
 #------------------------------------------------------------------------------
