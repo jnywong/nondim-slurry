@@ -104,12 +104,12 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
         if i ==0 or i == nTemp-1:
             ax1.plot(radius*1e-3,density,color=colors[i], linewidth = 2,
-                     label =r'$T_{{sl}}=${:.0f} K'.format(csb_temp[i]))
+                     label =r'$T^{{sl}}=${:.0f} K'.format(csb_temp[i]))
         # Reference case
         elif csb_temp[i]==csb_temp0:
             den_jump0 = density[0]-density[-1]
             ax1.plot(radius*1e-3,density,color='silver', linewidth = 2,
-                     label=r'$T_\mathregular{{sl}}=$5457 K')
+                     label=r'$T^\mathregular{{sl}}=$5457 K')
         else:
             ax1.plot(radius*1e-3,density,color=colors[i])
         den_jump.append(density[0]-density[-1])
@@ -137,12 +137,12 @@ def plot_sensitivity(csb_temp,csb_oxygen,csb_temp0,csb_oxy0,saveOn,aspectRatio=0
             (radius,temp,xi,solidFlux,density)=pickle.load(f)
         if i ==0 or i == nOxy-1:
             ax2.plot(radius*1e-3,density,color=colors[i], linewidth = 2,
-                     label =r'$\xi_{{sl}}=${:.1f} mol.%'.format(csb_oxygen[i]))
+                     label =r'$\xi^{{sl}}=${:.1f} mol.%'.format(csb_oxygen[i]))
         # Reference case
         elif csb_oxygen[i]==csb_oxy0:
             den_jump0 = density[0]-density[-1]
             ax2.plot(radius*1e-3,density,color='silver', linewidth = 2,
-                     label=r'$\xi_{{sl}}=$8.0 mol.%')
+                     label=r'$\xi^{{sl}}=$8.0 mol.%')
         else:
             ax2.plot(radius*1e-3,density,color=colors[i])
         den_jump.append(density[0]-density[-1])

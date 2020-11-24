@@ -58,8 +58,8 @@ from slurpy.plot_utils import plot_profile
 plotOn=1 # show temp, xi, solid flux and density profiles
 
 # Input parameters
-# layer_thicknesses=np.array([150e3]) # (m)
-layer_thicknesses=np.array([150e3,200e3,250e3,300e3,350e3,400e3]) #(m)
+layer_thicknesses=np.array([150e3]) # (m)
+# layer_thicknesses=np.array([150e3,200e3,250e3,300e3,350e3,400e3]) #(m)
 thermal_conductivities=np.array([100.]) # (W m^-1 K^-1)
 icb_heatfluxes=np.array([2.5]) # (TW)
 csb_heatfluxes=np.array([5.]) # (TW)

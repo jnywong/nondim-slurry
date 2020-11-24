@@ -64,13 +64,13 @@ from slurpy.plot_utils import plot_sensitivity, plot_sedimentation
 
 # %% MODEL INPUTS
 # Save plot?
-saveOn=1
+saveOn=0
 
 # Input parameters
 layer_thickness=150e3 # (m)
 thermal_conductivity=100. # (W m^-1 K^-1)
 icb_heatflux=2.5 # (TW)
-csb_heatflux=5.5 # (TW)
+csb_heatflux=5.0 # (TW)
 h=0.05 # stepsize of heat flux through parameter space
 
 # Sensitivity study
@@ -107,28 +107,28 @@ for x in [x for x in csb_temp]:
         solveslurry(layer_thickness, icb_heatflux, csb_heatflux, \
                     thermal_conductivity, x, h)
     print('CSB temp: Run {}/{}'.format(k,n_temp))
-                
+
     with open(filename,'wb') as f:
         pickle.dump([radius,temp,xi,solidFlux,density], f)
-    print('{} saved'.format(filename))        
+    print('{} saved'.format(filename))
 
-    k+=1            
-    
-k=1    
+    k+=1
+
+k=1
 for y in [y for y in csb_oxy]:
-    filename = 'sensitivity/oxy_{:.1f}'.format(y).replace('.','_')    
+    filename = 'sensitivity/oxy_{:.1f}'.format(y).replace('.','_')
     if os.path.exists(filename):
-        continue # skip if file exists    
+        continue # skip if file exists
     (outputDir,radius,temp,xi,solidFlux,density)= \
         solveslurry(layer_thickness, icb_heatflux, csb_heatflux, \
                     thermal_conductivity, csb_temp0, h, mol_conc_oxygen_bulk=y)
     print('CSB oxy: Run {}/{}'.format(k,n_oxy))
-    
+
     with open(filename,'wb') as f:
         pickle.dump([radius,temp,xi,solidFlux,density], f)
-    print('{} saved'.format(filename))        
+    print('{} saved'.format(filename))
 
-    k+=1 
+    k+=1
 
 plot_sensitivity(csb_temp,csb_oxy,csb_temp0,csb_oxy0,saveOn)
 
@@ -136,16 +136,16 @@ k=1
 for z in [z for z in sed_con]:
     filename = 'sensitivity/sed_{:.0f}'.format(np.log10(z)).replace('.','_')
     if os.path.exists(filename):
-        continue # skip if file exists    
+        continue # skip if file exists
     (outputDir,radius,temp,xi,solidFlux,density)= \
         solveslurry(layer_thickness, icb_heatflux, csb_heatflux, \
                     thermal_conductivity, csb_temp0, h, sedimentation_constant=z)
     print('Sedimentation constant: Run {}/{}'.format(k,n_sed))
-                
+
     with open(filename,'wb') as f:
         pickle.dump([radius,temp,xi,solidFlux,density], f)
-    print('{} saved'.format(filename))        
+    print('{} saved'.format(filename))
 
-    k+=1 
-    
-plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75)    
+    k+=1
+
+plot_sedimentation(sed_con,saveOn,mol_conc_oxygen_bulk=8,figAspect=0.75)

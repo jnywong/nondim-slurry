@@ -246,6 +246,7 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
     snow_speed_out = icb_speed_out - freezing_speed
     ic_age_out=gp.geticage(icb_speed_out)
     print("Mixing parameter is %.2f" % F_out)
+    print("Freezing speed is {:.2e} m/s = {:.3f} mm/yr".format(freezing_speed,freezing_speed*1e3*year))
     print("ICB speed is {:.2e} m/s = {:.3f} mm/yr".format(icb_speed_out,icb_speed_out*1e3*year))
     print("IC age is %.2f Ga" % ic_age_out)
 
