@@ -284,7 +284,8 @@ def plot_seismic(layer_thickness, thermal_conductivity,
     # Look up AK135
     radius_ak135 = ak135radius()
     vp_ak135 = ak135vp(radius_ak135)
-
+    
+    # Plot FVW, PREM and AK135
     ax.plot(profiles.r*1e-3,vp_fvw,color='blue',lw=2,ls=':',label='Ohtaki et al. (2015)')
     ax.vlines(profiles.r[0]*1e-3,vp_fvw[0],10.4,color='blue',lw=2,ls=':')
     ax.plot(profiles.r*1e-3,premvp(profiles.r)*1e-3,color='k',ls='--',label='PREM')
@@ -292,12 +293,23 @@ def plot_seismic(layer_thickness, thermal_conductivity,
     ax.plot(radius_ak135*1e-3,vp_ak135*1e-3,'k',label='ak135')
     ax.vlines(radius_ak135[0]*1e-3,vp_ak135[0]*1e-3,10.4, 'k')
 
-    ax.legend(fontsize=11.5)
+    ax.legend(loc = 0, fontsize=11.5)
     ax.set(xlabel="Radius (km)")
     ax.set(ylabel="P wave speed (km/s)")
     ax.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
-    ax.set_ylim([10.1,10.4])
-    plt.yticks(np.arange(10.1,10.41,0.1))
+    ax.set_ylim([10.25,10.4])
+    major_xticks = np.arange(1200,1370,20)
+    minor_xticks = np.arange(1200,1370,5)    
+    major_yticks = np.arange(10.25,10.4,0.05)
+    minor_yticks = np.arange(10.25,10.4,0.01)
+    ax.set_xticks(major_xticks)
+    ax.set_xticks(minor_xticks, minor=True)
+    ax.set_yticks(major_yticks)
+    ax.set_yticks(minor_yticks, minor=True)
+    ax.grid(which='minor', alpha=0.2)
+    ax.grid(which='major', alpha=0.5)
+    ax.tick_params(which='major',length = 7)
+    ax.tick_params(which='minor',length = 3.5)
 
     if saveOn==1:
         saveDir='figures/seismic/'
@@ -308,7 +320,7 @@ def plot_seismic(layer_thickness, thermal_conductivity,
         print('Figure saved as {}'.format(saveDir+foldername+"/"+filename+".pdf"))
     plt.show()
 
-    return profiles.r, vp_slurry, profiles.density
+    return profiles.r, vp_slurry, profiles.density, vp_fvw
 
 # %%
 def plot_seismic_dark(layer_thickness, thermal_conductivity,
