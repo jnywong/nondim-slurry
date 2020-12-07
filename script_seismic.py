@@ -46,8 +46,8 @@ saveOn=1
 # Input parameters
 layer_thickness=np.array([150e3]) # (m)
 thermal_conductivity=np.array([100.]) # (W m^-1 K^-1)
-icb_heatflux=np.array([2.5]) # (TW)
-csb_heatflux=np.array([5.])
+icb_heatflux=np.array([3.4]) # (TW)
+csb_heatflux=np.array([7.4])
 seis='prem'
 
 #------------------------------------------------------------------------------
@@ -59,5 +59,3 @@ seis='prem'
 radius,slurry_vp,slurry_density,ohtaki_vp = plot_seismic(layer_thickness, thermal_conductivity,
                                           icb_heatflux, csb_heatflux, saveOn)
 
-rho_bod = density_solidFe - slurry_density[0]
-print('Delta rho bod is {:.2f} kg/m^3'.format(rho_bod))
