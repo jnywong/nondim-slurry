@@ -53,11 +53,6 @@ def plot_profile(inputDir):
 
     # Density
     ax4.plot(radius,profiles.density)
-    # PREM
-    density_prem=premdensity(radius*1e3)
-    ax4.plot(radius,density_prem,'k--',label='PREM')
-    ax4.legend()
-
     ax4.set(xlabel="Radius (km)",ylabel="Density ($\mathrm{kg m^{-3}}$)")
 
     # Liquidus
@@ -65,12 +60,6 @@ def plot_profile(inputDir):
     temp_liquidus=liquidus(radius_liquidus)
     ax1.plot(radius_liquidus*1e-3,temp_liquidus,'k--', label = 'Liquidus (Davies et al. 2015)')
     ax1.legend()
-
-    # Constant CSB oxygen
-    # ax2.hlines(y=8, xmin=radius[0], xmax=radius.iloc[-1],colors='k',linestyles='dashed')
-
-    # Zero solid flux
-    # ax3.hlines(y=0, xmin=radius[0], xmax=radius.iloc[-1],colors='k',linestyles='dashed')
 
     # Seismology
     radius_prem=np.linspace(icb_radius,csb_radius)

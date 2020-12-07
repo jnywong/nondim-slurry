@@ -49,6 +49,7 @@ density : numpy array
 import numpy as np
 
 from slurpy.slurry import solveslurry
+# from slurpy.slurry2 import solveslurry
 from slurpy.getparameters import getcsbradius
 from slurpy.lookup import liquidus
 from slurpy.plot_utils import plot_profile
@@ -80,7 +81,7 @@ k=1 # counter to track parameter search progress
 for w,x,y,z in [(w,x,y,z) for w in layer_thicknesses for x in icb_heatfluxes for y in csb_heatfluxes for z in thermal_conductivities]:
     csb_radius = getcsbradius(w)
     csb_temp = liquidus(csb_radius)
-    (outputDir,radius,temp,xi,solidFlux,density)=solveslurry(w,x,y,z,csb_temp,h) #,model='ohtaki')
+    (outputDir,radius,temp,xi,solidFlux,F,icb_speed,density)=solveslurry(w,x,y,z,csb_temp,h) #,model='ohtaki')
     print('Run {}/{}'.format(k,n_tot))
     k+=1
 

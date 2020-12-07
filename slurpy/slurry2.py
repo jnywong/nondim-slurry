@@ -76,11 +76,11 @@ def solveslurry(layer_thickness, icb_heatflux, csb_heatflux, thermal_conductivit
         # liquidus (=dxi/dr)
         eq1=-(Lip*density_seis*gravity_seis+y[3]/y[0])*Rrho/(Lix*St*y[0])
         # oxygen eqn (=dj/dr)
-        eq2=(Lip*Rrho*term/(Lix*St*Pe*Rvol) - eq1*(Rrho*speed+y[2]) - \
+        eq2=(Lip*Rrho*term/(Lix*St*Pe*Rvol) - eq1*(Rrho*speed*(icb_radius/csb_radius)**2+y[2]) - \
              2*y[1]*y[2]/r)/y[1]
         # temp eqn (=d2T/dr2)
         eq3=-Pe/Le*((eq2+2/r*y[2])/St + \
-            (speed+2*Le/(r*Pe))*y[3])
+            (speed*(icb_radius/csb_radius)**2+2*Le/(r*Pe))*y[3])
         return np.vstack([y[3],eq1,eq2,eq3])
 
     def bcs(ya,yb,p):
