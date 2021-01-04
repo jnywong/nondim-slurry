@@ -46,8 +46,8 @@ saveOn=1
 # Input parameters
 layer_thickness=np.array([150e3]) # (m)
 thermal_conductivity=np.array([100.]) # (W m^-1 K^-1)
-icb_heatflux=np.array([3.4]) # (TW)
-csb_heatflux=np.array([7.4])
+icb_heatflux=np.array([2.5]) # (TW)
+csb_heatflux=np.array([5])
 seis='prem'
 
 #------------------------------------------------------------------------------
