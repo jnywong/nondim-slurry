@@ -36,7 +36,7 @@ filename : str
 
 # %% IMPORT STATEMENTS
 import numpy as np
-from slurpy.plot_utils import plot_seismic, plot_CD
+from slurpy.plot_utils import plot_seismic
 from slurpy.coreproperties import density_solidFe
 
 # %% MODEL INPUTS
@@ -56,6 +56,5 @@ seis='prem'
 # foldername, filename = get_outputDir(layer_thickness,icb_heatflux,csb_heatflux, \
 #                                      thermal_conductivity, model=seis)
 # Plot and save
-radius,slurry_vp,slurry_density,ohtaki_vp = plot_CD(layer_thickness, thermal_conductivity,
+radius,slurry_vp,slurry_density,ohtaki_vp = plot_seismic(layer_thickness, thermal_conductivity,
                                           icb_heatflux, csb_heatflux, saveOn)
-
