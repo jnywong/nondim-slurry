@@ -22,7 +22,7 @@ thermal_conductivity : numpy float
     Specify thermal conductivity (W/m/K).
 icb_heatflux : numpy float
     Specify heat flux through the ICB (TW).
-csb_heatflux : numpy float
+perseuscsb_heatflux : numpy float
     Specify heat flux through the CSB (TW).
 
 Returns
