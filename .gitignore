@@ -11,6 +11,7 @@ slurpy/__pycache__/*
 
 # Byte-compiled / optimized / DLL files
 /__pycache__/
+**/._*
 *.py[cod]
 
 # C extensions
