@@ -11,6 +11,7 @@ setup(name='slurpy',
       author_email='jenny.wong@univ-grenoble-alpes.fr',
       license='MIT',
       packages=['slurpy'],
+      install_requires=['numpy','scipy','matplotlib','pandas','pickle'],
       # scripts=['slurpy/bin/<filename>.py'],
        package_data={'slurpy': ['lookupdata/*.csv']},
       )
