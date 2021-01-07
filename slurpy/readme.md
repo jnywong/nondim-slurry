@@ -1,4 +1,4 @@
-# nondim-slurry
+# slurpy
 
 Solve the 1D, steady, spherical slurry system outlined in Wong et al.
 (in prep) (see also Wong et al. 2018).
@@ -6,44 +6,83 @@ Solve the 1D, steady, spherical slurry system outlined in Wong et al.
 ## Getting Started
 
 ### Prerequisites
-- [Git](https://git-scm.com)
-- [Python](https://www.python.org/) - Version 3.7.0
+- [Python](https://www.python.org/)
 
 ### Installing
 
+Pip:
+```
+pip install -i https://test.pypi.org/simple/ slurpy
+```
+
+Git:
 Download the latest version of the repository [here](https://github.com/jnywong/nondim-slurry).
 
 ### A simple example
 
-1. Open `script_parametersearch.py`
+Sample scripts can be found within the module package `slurpy/scripts`.
+
+1. Open `parameter_search.py`
 
 2. Enter some input parameters. For example, try:
 
-![alt text](docs/simple_example.png "Simple example")
+```
+# %% MODEL INPUTS
+# Show plots?
+plotOn=1 # show temp, xi, solid flux and density profiles
 
-3. Run `script_parametersearch.py`
+# Input parameters
+layer_thicknesses=np.array([150e3]) # (m)
+thermal_conductivities=np.array([100.]) # (W m^-1 K^-1)
+icb_heatfluxes=np.array([3.4]) # (TW)
+csb_heatfluxes=np.array([7.4]) # (TW)
+
+h=0.05 # stepsize of heat flux through parameter space
+```
+
+![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/simple_example.png)
+
+3. Run `parameter_search.py`
 
 4. Admire the output:
 
-![alt text](docs/simple_output.png "Simple output")
+![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/simple_output.png)
 
 ### Example: Sensitivity study
 
-1. Open `script_sensitivity.py`
+1. Open `sensitivity.py`
 
 2. Enter some input parameters. For example, try:
 
-![hello!](docs/sensitivity.png "Example: Sensitivity study")
+```
+# %% MODEL INPUTS
+# Save plot?
+saveOn=0
 
-3. Run `script_sensitivity.py`
+# Input parameters
+layer_thickness=150e3 # (m)
+thermal_conductivity=100. # (W m^-1 K^-1)
+icb_heatflux=2.5 # (TW)
+csb_heatflux=5.0 # (TW)
+h=0.05 # stepsize of heat flux through parameter space
+
+# Sensitivity study
+csb_temp = np.arange(4500.,6100.,100) # (K)
+csb_oxy = np.arange(2,12.5,0.5) # (mol.%)
+sed_con= np.array([1e-5,1e-4,1e-3,1e-2,1e-1]) # (kg s/m^3) pre-factor in sedimentation coefficient, b(phi)
+```
+
+![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/sensitivity.png)
+
+3. Run `sensitivity.py`
 
 4. Admire the output:
 
-![hello!](docs/sensitivity_example.png "Example: Sensitivity output")
+![hello!](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/sensitivity_example.png)
 
-## Built With
+## Links
 
-* [Python](https://www.python.org/) - Version 3.7.0
+* [PyPI](https://test.pypi.org/project/slurpy/)
 
 ## Authors
 
@@ -53,12 +92,11 @@ Download the latest version of the repository [here](https://github.com/jnywong/
 
 ## License
 
-This project is licensed under the MIT License - see the [license.md](license.md) file for details
+This project is licensed under the MIT License - see the [license.md](LICENSE.md) file for details
 
 ## Acknowledgments
 
 * Del Duca Foundation
 * EPSRC Centre for Doctoral Training in Fluid Dynamics
-
 
 :tada:
