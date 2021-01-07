@@ -49,7 +49,6 @@ density : numpy array
 import numpy as np
 
 from slurpy.slurry import solveslurry
-# from slurpy.slurry2 import solveslurry
 from slurpy.getparameters import getcsbradius
 from slurpy.lookup import liquidus
 from slurpy.plot_utils import plot_profile
