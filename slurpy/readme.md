@@ -9,10 +9,14 @@ Solve the 1D, steady, spherical slurry system outlined in Wong et al.
 - [Python](https://www.python.org/)
 
 ### Installing
+Conda:
+```
+conda install nondim-slurry
+```
 
 Pip:
 ```
-pip install -i https://test.pypi.org/simple/ slurpy
+pip install nondim-slurry
 ```
 
 Git:
