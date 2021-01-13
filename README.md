@@ -11,7 +11,7 @@ Python module to solve the 1D, steady, spherical slurry system outlined in Wong 
 ### Installing
 Conda:
 ```
-conda install nondim-slurry
+conda install -c jnywong nondim-slurry
 ```
 
 Pip:
