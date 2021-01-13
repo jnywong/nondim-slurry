@@ -1,6 +1,6 @@
 # slurpy
 
-Solve the 1D, steady, spherical slurry system outlined in Wong et al.
+Python module to solve the 1D, steady, spherical slurry system outlined in Wong et al.
 (in prep) (see also Wong et al. 2018).
 
 ## Getting Started
@@ -20,13 +20,16 @@ pip install nondim-slurry
 ```
 
 Git:
+
 Download the latest version of the repository [here](https://github.com/jnywong/nondim-slurry).
 
-### A simple example
+## Example scripts
 
-Sample scripts can be found within the module package `slurpy/scripts`.
+Sample scripts can be found within the module package `$PATH/lib/python3.8/site-packages/slurpy/scripts`.
 
-1. Open `parameter_search.py`
+### Parameter search
+
+1. Open `scripts/parameter_search.py`
 
 2. Enter some input parameters. For example, try:
 
@@ -44,17 +47,15 @@ csb_heatfluxes=np.array([7.4]) # (TW)
 h=0.05 # stepsize of heat flux through parameter space
 ```
 
-![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/simple_example.png)
-
 3. Run `parameter_search.py`
 
 4. Admire the output:
 
 ![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/simple_output.png)
 
-### Example: Sensitivity study
+### Sensitivity study
 
-1. Open `sensitivity.py`
+1. Open `scripts/sensitivity.py`
 
 2. Enter some input parameters. For example, try:
 
@@ -76,8 +77,6 @@ csb_oxy = np.arange(2,12.5,0.5) # (mol.%)
 sed_con= np.array([1e-5,1e-4,1e-3,1e-2,1e-1]) # (kg s/m^3) pre-factor in sedimentation coefficient, b(phi)
 ```
 
-![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/sensitivity.png)
-
 3. Run `sensitivity.py`
 
 4. Admire the output:
@@ -86,20 +85,22 @@ sed_con= np.array([1e-5,1e-4,1e-3,1e-2,1e-1]) # (kg s/m^3) pre-factor in sedimen
 
 ## Links
 
+* [Anaconda Cloud](https://anaconda.org/jnywong/nondim-slurry)
 * [PyPI](https://test.pypi.org/project/slurpy/)
 
 ## Authors
 
-* **Jenny Wong** - *Institut de Physique du Globe de Paris*
-* **Chris Davies** - *University of Leeds*
-* **Chris Jones** - *University of Leeds*
+* [**Jenny Wong**](https://jnywong.github.io/) - *University of Leeds - Institut de Physique du Globe de Paris - Institut des Sciences de la Terre*
+* [**Chris Davies**](https://environment.leeds.ac.uk/see/staff/1225/dr-chris-davies) - *University of Leeds*
+* [**Chris Jones**](https://eps.leeds.ac.uk/maths/staff/4042/professor-christopher-jones-) - *University of Leeds*
 
 ## License
 
-This project is licensed under the MIT License - see the [license.md](LICENSE.md) file for details
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
 
 ## Acknowledgments
 
+* ERC SEIC
 * Del Duca Foundation
 * EPSRC Centre for Doctoral Training in Fluid Dynamics
 
