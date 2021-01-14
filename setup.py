@@ -10,7 +10,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(name='nondim-slurry',
-      version='0.0.17',
+      version='0.0.18',
       description='Python code that solves the 1D, steady, spherical slurry \
       equations outlined in Wong et al (in prep) (see also Wong et al. 2018)',
       long_description=long_description,
@@ -23,4 +23,5 @@ setup(name='nondim-slurry',
       # install_requires=[<pypi_package_name>],
       # scripts=file_list,
       package_data={'slurpy': ['lookupdata/*.csv', 'scripts/*.py']},
+      install_requires=['pytest'],
       )
