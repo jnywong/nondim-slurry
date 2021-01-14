@@ -1,3 +1,5 @@
+![](https://api.travis-ci.org/jnywong/nondim-slurry.svg?branch=master&status=passed)
+
 # slurpy
 
 Python module to solve the 1D, steady, spherical slurry system outlined in Wong et al.
@@ -84,9 +86,8 @@ sed_con= np.array([1e-5,1e-4,1e-3,1e-2,1e-1]) # (kg s/m^3) pre-factor in sedimen
 ![hello!](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/sensitivity_example.png)
 
 ## Links
-
-* [Anaconda Cloud](https://anaconda.org/jnywong/nondim-slurry)
 * [PyPI](https://test.pypi.org/project/slurpy/)
+* [Anaconda Cloud](https://anaconda.org/jnywong/nondim-slurry)
 
 ## Authors
 
