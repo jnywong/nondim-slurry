@@ -1,5 +1,3 @@
-![](https://api.travis-ci.org/jnywong/nondim-slurry.svg?branch=master&status=passed)
-
 # slurpy
 
 Python module to solve the 1D, steady, spherical slurry system outlined in Wong et al.
