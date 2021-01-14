@@ -4,7 +4,6 @@
 Simple test code for slurpy module
 """
 
-import pytest
 from slurpy.coreproperties import icb_radius
 
 def output():
