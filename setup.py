@@ -10,9 +10,9 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(name='nondim-slurry',
-      version='0.0.18',
+      version='0.1',
       description='Python code that solves the 1D, steady, spherical slurry \
-      equations outlined in Wong et al (in prep) (see also Wong et al. 2018)',
+      equations outlined in Wong et al (in prep, EPSL) (see also Wong et al. 2018)',
       long_description=long_description,
       long_description_content_type="text/markdown",
       url='https://github.com/jnywong/nondim-slurry',

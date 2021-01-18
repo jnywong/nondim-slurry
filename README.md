@@ -1,7 +1,7 @@
 # slurpy
 
 Python module to solve the 1D, steady, spherical slurry system outlined in Wong et al.
-(in prep) (see also Wong et al. 2018).
+(2021) (see also Wong et al. 2018).
 
 ## Getting Started
 
@@ -23,9 +23,31 @@ Git:
 
 Download the latest version of the repository [here](https://github.com/jnywong/nondim-slurry).
 
-## Example scripts
+## Package structure
+```
+slurpy/
+  __init__.py
+  coreproperties.py
+  data_utils.py
+  getparameters.py
+  lookup.py
+  lookupdata/
+    denPREM.csv
+    gravPREM.csv
+    presPREM.csv
+    radAK135.csv
+    radPREM.csv
+    vpAK135.csv
+    vpPREM.csv
+  plot_utils.py
+  scripts/
+    parameter_search.py
+    seismic.py
+    sensitivity.py
+  slurry.py
+```
 
-Sample scripts can be found within the module package `$PATH/lib/python3.8/site-packages/slurpy/scripts`.
+## Example scripts
 
 ### Parameter search
 
