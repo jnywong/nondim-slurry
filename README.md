@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jnywong/nondim-slurry.svg?branch=master)](https://travis-ci.org/jnywong/nondim-slurry)
+
 # slurpy
 
 Python module to solve the 1D, steady, spherical slurry system outlined in Wong et al.
@@ -21,7 +23,7 @@ pip install nondim-slurry
 
 Git:
 
-Download the latest version of the repository [here](https://github.com/jnywong/nondim-slurry).
+Find the latest version of the repository [here](https://github.com/jnywong/nondim-slurry).
 
 ## Package structure
 ```
