@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/jnywong/nondim-slurry.svg?branch=master)](https://travis-ci.org/jnywong/nondim-slurry)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4446750.svg)](https://doi.org/10.5281/zenodo.4446750)
 
 # slurpy
 

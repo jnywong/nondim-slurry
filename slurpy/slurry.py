@@ -9,7 +9,7 @@ Created on Fri Mar 20 13:20:26 2020
 # SLURRY.PY                                                                   #
 ###############################################################################
 
-# Solve the 1D, steady, spherical slurry system outlined in Wong et al. (in prep)
+# Solve the 1D, steady, spherical slurry system outlined in Wong et al. (2021)
 # (see also Wong et al. 2018).
 
 Parameters

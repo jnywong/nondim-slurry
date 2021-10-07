@@ -274,7 +274,7 @@ def plot_seismic(layer_thickness, thermal_conductivity,
     # Look up AK135
     radius_ak135 = ak135radius()
     vp_ak135 = ak135vp(radius_ak135)
-    
+
     # Plot FVW, PREM and AK135
     ax.plot(profiles.r*1e-3,vp_fvw,color='blue',lw=2,ls=':',label='Ohtaki et al. (2015)')
     ax.vlines(profiles.r[0]*1e-3,vp_fvw[0],10.4,color='blue',lw=2,ls=':')
@@ -289,7 +289,7 @@ def plot_seismic(layer_thickness, thermal_conductivity,
     ax.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
     ax.set_ylim([10.25,10.4])
     major_xticks = np.arange(1200,1370,20)
-    minor_xticks = np.arange(1200,1370,5)    
+    minor_xticks = np.arange(1200,1370,5)
     major_yticks = np.arange(10.25,10.4,0.05)
     minor_yticks = np.arange(10.25,10.4,0.01)
     ax.set_xticks(major_xticks)
@@ -409,19 +409,19 @@ def plot_compare(layer_thickness,csb_heatflux,icb_heatflux,thermal_conductivity,
                  self_diffusion=0.98e-8,aspectRatio=0.75,tempMin=5400,
                  tempMax = 5800,xiMin = 6,xiMax = 8,jMin = -3.5e-7,jMax = 0,
                  denMin=11900,denMax = 12250):
-    
+
     w,h= plt.figaspect(aspectRatio)*2
     fig=plt.figure()
     fig, ((ax1,ax2),(ax3,ax4)) = plt.subplots(2,2,sharex=True,figsize=(w,h))
-    colors = plt.cm.tab10(np.linspace(0,1,layer_thickness.size)) 
+    colors = plt.cm.tab10(np.linspace(0,1,layer_thickness.size))
     plt.rcParams["axes.prop_cycle"] = plt.cycler("color", plt.cm.tab10.colors)
-    
+
     for i in (range(layer_thickness.size)):
         foldername,filename = get_outputDir(layer_thickness[i],icb_heatflux,
                                             csb_heatflux,thermal_conductivity)
         inputDir=foldername+"/"+filename
         data_in,data_out,data_profiles=readdata(inputDir)
-   
+
         radius=(data_profiles['r'])*1e-3
         oxygen=data_profiles['oxygen']
         (mass_conc_O,acore) =getcsbmassoxygen(data_in.oxygen_bulk)
@@ -431,49 +431,49 @@ def plot_compare(layer_thickness,csb_heatflux,icb_heatflux,thermal_conductivity,
         ax3.plot(radius,data_profiles['solidflux'])#,color=colors[i])
         ax4.plot(radius,data_profiles['density'],
                  label='{:.0f} km'.format(layer_thickness[i]*1e-3))#,color=colors[i])
-    
-    # Liquidus        
+
+    # Liquidus
     radius_liquidus=np.linspace(icb_radius,icb_radius+400e3)
     temp_liquidus=liquidus(radius_liquidus)
     ax1.plot(radius_liquidus*1e-3,temp_liquidus,'k--',label = 'Liquidus (Davies et al. 2015)')
-     
+
     # PREM
     radius_prem=np.linspace(icb_radius,icb_radius+400e3)
     density_prem=premdensity(radius_prem)
     ax4.plot(radius_prem*1e-3,density_prem,'k--',label='PREM')
     ax4.set(xlabel="Radius (km)",ylabel="Density ($\mathrm{kg m^{-3}}$)")
-    
+
     # Axis titles
     ax1.set(ylabel="Temperature (K)")
     ax2.set(ylabel="Oxygen (mol.%)")
     ax3.set(xlabel="Radius (km)",ylabel="Solid flux ($\mathrm{kg m^{-2} s^{-1}}$)")
-    
+
     # Legend
     ax1.legend(fontsize=11.5,loc=1)
     ax4.legend(fontsize=11.5,loc=1)
-    
+
     # Axis limits
     ax1.set_ylim([tempMin,tempMax])
     ax2.set_ylim([xiMin,xiMax])
     ax3.set_ylim([jMin,jMax])
     ax4.set_ylim([denMin,denMax])
-    
+
     ax1.set_xlim([1220,(icb_radius+400e3)*1e-3])
-    
+
     # Subfigure labels
     ax1.text(1225,tempMax-23,'(a)',fontsize=14)
     ax2.text(1225,xiMax - 0.12,'(b)',fontsize=14)
     ax3.text(1225,jMax - .2e-7,'(c)',fontsize=14)
     ax4.text(1225,denMax - 20,'(d)',fontsize=14)
-    
+
     plt.tight_layout()
-    
+
     if saveOn==1:
         if not os.path.exists('figures/profiles'):
             os.makedirs('figures/profiles')
         saveName=foldername+"_"+filename+saveTag
         plt.savefig('figures/profiles/'+saveName+'.pdf',format='pdf',dpi=200)
-        
+
     plt.show()
 
 # %%
@@ -542,13 +542,13 @@ def plot_CD(layer_thickness, thermal_conductivity,
         # ax3.plot(profiles.r*1e-3,premdensity(profiles.r),'k--')
         # ax3.plot(profiles.r*1e-3,profiles.density)
         k+=1
-    
+
     # Plot temperature and composition
     ax1.plot(profiles.r*1e-3,profiles.temp,lw=2,color='red',label='temperature')
     (mass_conc_O,acore) = getcsbmassoxygen(inputs.oxygen_bulk)
     acore=float(acore)
-    ax2.plot(profiles.r*1e-3,profiles.oxygen*acore/aO*100,lw=2,color='blue',label='oxygen')    
-    
+    ax2.plot(profiles.r*1e-3,profiles.oxygen*acore/aO*100,lw=2,color='blue',label='oxygen')
+
     # Plot FVW, PREM and AK135
     ax3.plot(profiles.r*1e-3,vp_fvw,color='black',lw=2,ls=':',label='Ohtaki et al. (2015)')
     ax3.vlines(profiles.r[0]*1e-3,vp_fvw[0],10.4,color='black',ls=':',lw=2)
@@ -573,11 +573,11 @@ def plot_CD(layer_thickness, thermal_conductivity,
     ax3.set_xlim([1200,profiles.r.iloc[-1]*1e-3])
     ax3.set_ylim([10.25,10.4])
     major_xticks = np.arange(1200,1370,20)
-    minor_xticks = np.arange(1200,1370,5)    
+    minor_xticks = np.arange(1200,1370,5)
     ax1.set_xticks(major_xticks)
     ax1.set_xticks(minor_xticks, minor=True)
     ax2.set_xticks(major_xticks)
-    ax2.set_xticks(minor_xticks, minor=True)    
+    ax2.set_xticks(minor_xticks, minor=True)
     ax3.set_xticks(major_xticks)
     ax3.set_xticks(minor_xticks, minor=True)
     major_yticks = np.arange(5500,5751,100)
@@ -587,7 +587,7 @@ def plot_CD(layer_thickness, thermal_conductivity,
     ax1.grid(which='minor', alpha=0.2)
     ax1.grid(which='major', alpha=0.5)
     ax1.tick_params(which='major',length = 7)
-    ax1.tick_params(which='minor',length = 3.5)    
+    ax1.tick_params(which='minor',length = 3.5)
     # major_yticks = np.arange(6.5,8.1,0.5)
     # minor_yticks = np.arange(6.5,8.1,0.1)
     # ax2.set_yticks(major_yticks)

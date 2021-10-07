@@ -45,12 +45,12 @@ def saveinputs(outputDir,n,layer_thickness,thermal_conductivity,icb_heatflux, \
     df=pd.DataFrame(inputs,index=[0]) # scalar data requires passing index=[0]
     df.to_csv(outputDir+'inputs.csv')
 
-def saveoutputs(outputDir,F,snow_speed,icb_speed, Q_cmb, Qs, Qs_slurry, 
-                     Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out, 
+def saveoutputs(outputDir,F,snow_speed,icb_speed, Q_cmb, Qs, Qs_slurry,
+                     Qs_oc, Ql, Qg, Qg_oc, Qg_slurry, cooling_rate_out,
                      cmb_temp,acore,state):
     outputs={'F':F,
              'snowSpeed':snow_speed,
-             'icbSpeed':icb_speed,             
+             'icbSpeed':icb_speed,
              'Q_cmb':Q_cmb,
              'Qs':Qs,
              'Qs_slurry': Qs_slurry,
@@ -65,7 +65,7 @@ def saveoutputs(outputDir,F,snow_speed,icb_speed, Q_cmb, Qs, Qs_slurry,
              'state':state}
     df=pd.DataFrame(outputs,index=[0]) # scalar data requires passing index=[0]
     df.to_csv(outputDir+'outputs.csv')
-    
+
 def savephaseboundaries(outputDir,nPe,nSt,Pe,St,density_jump,cmb_heatflux,
                             delta, F, icb_speed):
     nPe=np.array(nPe,ndmin=1)
@@ -78,15 +78,15 @@ def savephaseboundaries(outputDir,nPe,nSt,Pe,St,density_jump,cmb_heatflux,
     np.savetxt(outputDir+'cmb_heatflux.csv',cmb_heatflux)
     np.savetxt(outputDir+'delta.csv',delta)
     np.savetxt(outputDir+'F.csv',F)
-    np.savetxt(outputDir+'icb_speed.csv',icb_speed)    
+    np.savetxt(outputDir+'icb_speed.csv',icb_speed)
 
 def readdata(inputDir):
     # Data from spherical model
     data_inputs=pd.read_csv(inputDir+"/inputs.csv",index_col=False)
     data_outputs=pd.read_csv(inputDir+"/outputs.csv",index_col=False)
     data_profiles=pd.read_csv(inputDir+"/profiles.csv",index_col=False)
-    
-    return data_inputs,data_outputs,data_profiles    
+
+    return data_inputs,data_outputs,data_profiles
 
 def get_outputDir(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity,
                   mol_conc_oxygen_bulk=8.,self_diffusion=0.98e-8,mol_conc_SSi=8,
@@ -99,7 +99,7 @@ def get_outputDir(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity
     St=gp.getStefan(icb_heatflux,csb_heatflux,csb_radius)
     Le=gp.getLewis(thermal_conductivity,self_diffusion,density0)
     Pe=gp.getPeclet(freezing_speed,csb_radius,self_diffusion)
-    
+
     str1=str(np.round(Le,2)).replace('.','_')
     str2=str(np.round(Lip,2)).replace('.','_')
     str3=str(np.round(Lix,2)).replace('.','_')
@@ -108,5 +108,5 @@ def get_outputDir(layer_thickness,icb_heatflux,csb_heatflux,thermal_conductivity
 
     foldername = "Le_{}".format(str1)
     filename = "Lip_{}_Lix_{}_Pe_{}_St_{}".format(str2,str3,str4,str5)
-    
+
     return foldername,filename
