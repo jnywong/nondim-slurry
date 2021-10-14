@@ -76,7 +76,7 @@ h=0.05 # stepsize of heat flux through parameter space
 
 4. Admire the output:
 
-![](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/simple_output.png)
+![](docs/simple_output.png)
 
 ### Sensitivity study
 
@@ -106,7 +106,7 @@ sed_con= np.array([1e-5,1e-4,1e-3,1e-2,1e-1]) # (kg s/m^3) pre-factor in sedimen
 
 4. Admire the output:
 
-![hello!](https://raw.githubusercontent.com/jnywong/nondim-slurry/master/slurpy/docs/sensitivity_example.png)
+![hello!](docs/../docs/sensitivity_example.png)
 
 ## Links
 * [PyPI](https://pypi.org/project/nondim-slurry/)
