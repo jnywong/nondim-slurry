@@ -23,5 +23,5 @@ setup(name='nondim-slurry',
       # install_requires=[<pypi_package_name>],
       # scripts=file_list,
       package_data={'slurpy': ['lookupdata/*.csv', 'scripts/*.py']},
-      install_requires=['pytest'],
+      install_requires=['numpy','scipy','pandas','matplotlib','pytest'],
       )
